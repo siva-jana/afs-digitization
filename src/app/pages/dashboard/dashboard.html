@@ -163,13 +163,34 @@
 
 
 
-<div class="audited-checkbox-container">
+<!-- <div class="audited-checkbox-container">
       <label>
         <input type="checkbox" [(ngModel)]="isAudited"
           />
         Audited
       </label>
-  </div>
+  </div> -->
+  <div class="audited-radio-container">
+  <label>
+    <input
+      type="radio"
+      name="auditType"
+      [value]="true"
+      [(ngModel)]="isAudited"
+    />
+    Audited
+  </label>
+  <label style="margin-left: 10px;">
+    <input
+      type="radio"
+      name="auditType"
+      [value]="false"
+      [(ngModel)]="isAudited"
+    />
+    Unaudited
+  </label>
+</div>
+
 
       <button class="apply-btn" (click)="applyFilters()">Apply</button>
     </div>

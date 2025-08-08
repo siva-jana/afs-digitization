@@ -1,0 +1,42 @@
+<div class="login-container">
+  <h2> AFS Login</h2>
+
+  <form (ngSubmit)="login()" #loginForm="ngForm" novalidate>
+    <div class="form-group">
+      <label for="username">Username</label>
+      <input
+        id="username"
+        class="form-control"
+        [(ngModel)]="username"
+        name="username"
+        required
+      
+        #uname="ngModel"
+        placeholder="Enter your username"
+      />
+
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input
+        id="password"
+        type="password"
+        class="form-control"
+        [(ngModel)]="password"
+        name="password"
+        required
+    
+        #pwd="ngModel"
+        placeholder="Enter your password"
+      />
+  
+    </div>
+
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+    <button [disabled]="loginForm.invalid || loading" type="submit" class="btn btn-primary btn-block">
+      {{ loading ? 'Logging in...' : 'Login' }}
+    </button>
+  </form>
+</div>

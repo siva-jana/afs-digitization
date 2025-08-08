@@ -1,0 +1,299 @@
+<div class="dashboard-page">
+
+  <!-- Top Controls -->
+  <div class="top-controls">
+    <div class="metrics-box">
+      <div class="metrics-section">
+        <h3>Overall <span class="highlight">digitized</span> {{ globalMetrics.digitizedPages + globalMetrics.failedFiles }} pages in {{ globalMetrics.digitizedFiles + globalMetrics.failedFiles }} files</h3>
+        <div class="metrics-grid">
+          <div class="metrics-left">
+            <p>Files Digitized: {{ globalMetrics.digitizedFiles }}</p>
+            <p>Pages Digitized: {{ globalMetrics.digitizedPages }}</p>
+            <p>Files Failed: <span class="error-number">{{ globalMetrics.failedFiles }}</span></p>
+            <p>Pages Failed: <span class="error-number">{{ globalMetrics.failedFiles }}</span></p>
+          </div>
+          <div class="vertical-separator"></div>
+          <div class="metrics-right">
+            <div class="success-rate">{{ getGlobalSuccessRate() }}%</div>
+            <div class="success-label">Successful Digitization</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="metrics-section">
+        <h3>You have <span class="highlight">digitized</span> {{ userMetrics.digitizedPages + userMetrics.failedFiles }} pages in {{ userMetrics.digitizedFiles + userMetrics.failedFiles }} files</h3>
+        <div class="metrics-grid">
+          <div class="metrics-left">
+            <p>Files Digitized: {{ userMetrics.digitizedFiles }}</p>
+            <p>Pages Digitized: {{ userMetrics.digitizedPages }}</p>
+            <p>Files Failed:<span class="error-number">{{ userMetrics.failedFiles }}</span></p>
+            <p>Pages Failed:<span class="error-number">{{ userMetrics.failedFiles }}</span></p>
+          </div>
+          <div class="vertical-separator"></div>
+          <div class="metrics-right">
+            <div class="success-rate">{{ getUserSuccessRate() }}%</div>
+            <div class="success-label">Successful Digitization</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    
+  <button class="download-btn" (click)="downloadExcel()">Download</button>
+    <div class="top-actions">
+      
+      <div class="profile-icon" (click)="togglePopup()">👤</div>
+    </div>
+  </div>
+
+  <!-- Profile Popup -->
+  <div class="profile-popup" *ngIf="showPopup">
+    <div class="close-btn" (click)="togglePopup()">×</div>
+    <div class="popup-content">
+      <div class="avatar-large">👤</div>
+      <div><strong>Name:</strong> {{ fullName }}</div>
+      <div><strong>Email:</strong> {{ email }}</div>
+      <div><strong>Role:</strong> {{ role }}</div>
+      <div><strong>Last Login:</strong> {{ lastLoginTime | date:'short' }}</div>
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- Main Layout -->
+  <div class="dashboard-wrapper">
+
+    <!-- Filters -->
+    <div class="filters">
+      <div class="reset-filter" (click)="resetFilters()">Reset Filter</div>
+
+      <label>State</label>
+      <div class="custom-dropdown">
+        <input type="text" [(ngModel)]="stateSearchText" (input)="selectedState = ''; stateDropdownOpen = true"
+          (focus)="stateDropdownOpen = true" placeholder="Search state..." class="state-search-box" />
+
+        <div class="dropdown-list scroll-box" *ngIf="stateDropdownOpen && filteredStates.length > 0">
+          <div class="dropdown-item" *ngFor="let s of filteredStates" (click)="selectState(s)"
+            [class.selected]="s._id === selectedState">
+            {{ s.name }}
+          </div>
+        </div>
+      </div>
+
+      <label>Population Category</label>
+      <select [(ngModel)]="selectedPopulation" (change)="onPopulationOrStateChange()">
+         <option value="">Select population category</option>
+        <option *ngFor="let p of filters.populationCategories" [value]="p">{{ p }}</option>
+      </select>
+
+     
+     
+      <!-- <div class="custom-multiselect">
+       <label class="filter-label">City</label>
+      <input type="text" [(ngModel)]="citySearchText" placeholder="Search city..." class="city-search-box" />
+      
+      <div class="city-checkboxes scroll-box">
+        <label *ngFor="let c of filteredCities" class="checkbox-item">
+          <input type="checkbox" [value]="c.name" [checked]="selectedCities.includes(c.name)"
+            (change)="toggleCitySelection(c.name, $any($event.target).checked)" />
+         {{ c.name }} 
+        </label>
+      </div>
+      </div> -->
+
+      <label class="filter-label">City</label>
+<input
+  type="text"
+  [(ngModel)]="citySearchText"
+  placeholder="Search city..."
+  class="city-search-box"
+/>
+
+<!-- <div class="city-checkboxes scroll-box">
+  <label *ngFor="let c of filteredCities" class="checkbox-item">
+    <input
+      type="checkbox"
+      [value]="c.name"
+      [checked]="selectedCities.includes(c.name)"
+      (change)="toggleCitySelection(c.name, $any($event.target).checked)"
+    />
+    {{ c.name }}
+  </label>
+</div> -->
+<div *ngIf="selectedState && selectedPopulation">
+<div class="city-checkboxes scroll-box">
+  <label *ngFor="let c of filteredCities" class="checkbox-item">
+    <input
+      type="checkbox"
+      [value]="c.name"
+      [checked]="selectedCities.includes(c.name)"
+      (change)="toggleCitySelection(c.name, $any($event.target).checked)"
+    />
+    <span>{{ c.name }}</span>
+  </label>
+</div>
+</div>
+
+      
+
+      <label>Year</label>
+      <select [(ngModel)]="selectedYear">
+        <option value="">Select Year</option>
+        <option *ngFor="let y of filters.years" [value]="y.name">{{ y.name }}</option>
+      </select>
+
+      
+  <!-- <label>Document Type</label>
+  <select [(ngModel)]="selectedDocType">
+  <option value="">Select Document Type</option>
+  <option *ngFor="let d of filters.documentTypes" [ngValue]="d.key">{{ d.name }}</option>
+</select> -->
+<label>Document Type</label>
+<div class="grouped-dropdown">
+  <div *ngFor="let group of filters.documentTypes">
+    <div class="group-heading">{{ group.heading }}</div>
+    <div *ngFor="let d of group.items" class="group-option">
+      <label>
+        <input type="radio" name="docType" [value]="d.key" [(ngModel)]="selectedDocType" (ngModelChange)="onDocTypeChange($event)"/>
+         {{ d.name }}
+      </label>
+    </div>
+  </div>
+</div>
+
+
+
+
+<div class="audited-checkbox-container">
+      <label>
+        <input type="checkbox" [(ngModel)]="isAudited"
+          />
+        Audited
+      </label>
+  </div>
+
+      <button class="apply-btn" (click)="applyFilters()">Apply</button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+    <div class="placeholder-section" *ngIf="!filtersApplied">
+      <div><h4>select filters on the left pane to see the files</h4></div>
+      </div>
+      <div class="file-results" *ngIf="filtersApplied && filteredFiles.length > 0">
+      <h3>Available Files</h3>
+ 
+     <table class="afs-table" *ngIf="filteredFiles.length > 0">
+     <thead>
+      <tr>
+      <th>State</th>
+      <th>City
+        <span class="sort-buttons">
+         <button (click)="sortByCity('asc')">A-Z</button>
+         <button (click)="sortByCity('desc')">Z-A</button>
+        </span>
+        </th>
+      <th>ULB Code
+        <span class="sort-buttons">
+        <button (click)="sortByULBCode('asc')">A-Z</button>
+        <button (click)="sortByULBCode('desc')">Z-A</button>
+        </span>
+      </th>
+      <th>PDF uploaded by ULB</th>
+      <!-- <th>Page Count</th> -->
+
+      <th>Form Status</th>
+      <th>Digitize Status</th>
+      <th>Form Uploaded On</th>
+      <th>Form Digitized On</th>
+      <th>Request ID / Log</th>
+    </tr>
+  </thead>
+   <tbody>
+    <tr *ngFor="let file of filteredFiles">
+      <td>{{ file.stateName }}</td>
+      <td>{{ file.cityName }}</td>
+      <td>{{ file.ulbCode }}</td>
+     
+<!-- <td>
+
+  <ng-container *ngIf="file.previewUrl; else useBackendFile">
+    <a [href]="file.previewUrl" target="_blank">{{ file.fileName }}</a>
+  </ng-container>
+  <ng-template #useBackendFile>
+    <ng-container *ngIf="file.fileUrl; else noFileAvailable">
+      <a [href]="storageBaseUrl + file.fileUrl" target="_blank">{{ file.fileName }}</a>
+    </ng-container>
+    <ng-template #noFileAvailable>
+      {{ file.fileName }}
+  </ng-template>
+  </ng-template>
+
+  <div style="margin-top: 4px;">
+    <button class="upload-btn" (click)="triggerFileInput(file)">Upload</button>
+    <input type="file"
+           accept="application/pdf"
+           style="display: none"
+           (change)="handleFileUpload($event, file)"
+           #fileInput
+           [attr.data-id]="file.cityName + file.ulbCode" />
+  </div>
+</td> -->
+
+    <!-- <td>{{ file.pageCount || '—' }}</td> -->
+
+<td>
+
+  <!-- Preview for locally uploaded file -->
+  <ng-container *ngIf="file.previewUrl; else useBackendFile">
+    <a [href]="file.previewUrl" target="_blank">{{ file.fileName }}</a>
+    <div class="page-count" *ngIf="file.pageCount !== undefined">
+      ({{ file.pageCount }} pages)
+    </div>
+  </ng-container>
+
+  <!-- Fallback to backend-stored file -->
+  <ng-template #useBackendFile>
+    <ng-container *ngIf="file.fileUrl; else noFileAvailable">
+      <a [href]="storageBaseUrl + file.fileUrl" target="_blank">{{ file.fileName }}</a>
+      <div class="page-count" *ngIf="file.pageCount !== undefined">
+        ({{ file.pageCount }} pages)
+      </div>
+    </ng-container>
+
+    <!-- If no file available -->
+    <ng-template #noFileAvailable>
+      {{ file.fileName }}
+      <div class="page-count" *ngIf="file.pageCount !== undefined">
+        ({{ file.pageCount }} pages)
+      </div>
+    </ng-template>
+  </ng-template>
+
+  <!-- Upload Button -->
+  <div style="margin-top: 4px;">
+    <button class="upload-btn" (click)="triggerFileInput(file)">Upload</button>
+    <input type="file"
+           accept="application/pdf"
+           style="display: none"
+           (change)="handleFileUpload($event, file)"
+           #fileInput
+           [attr.data-id]="file.cityName + file.ulbCode" />
+  </div>
+</td>
+
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<div *ngIf="filtersApplied && filteredFiles.length === 0" class="no-files-msg">
+  No files found for the selected filters.
+</div>
+</div>
+</div>
+
+</div>

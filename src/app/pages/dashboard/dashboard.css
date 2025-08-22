@@ -84,7 +84,7 @@
   display: flex;
   flex-direction: row;
   gap: 2rem;
-  padding-left: 720px;
+  padding-left: 1100px;
   
 }
 
@@ -357,12 +357,13 @@
 .afs-table {
   width: 100%;
   border-collapse: collapse;
+  text-align: center;
 }
 
 .afs-table th, .afs-table td {
   border: 1px solid #ccc;
   padding: 8px;
-  text-align: left;
+  text-align: center;
 }
 
 .afs-table th {
@@ -493,4 +494,65 @@ button.upload-btn:hover {
 .sort-buttons button:active {
   background-color: #bfbfbf;
   transform: scale(0.97);
+}
+
+.selection-summary {
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  background: #eef6ff;
+  color: #333;
+  padding: 6px 12px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.popup-box {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  min-width: 320px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.popup-box button {
+  margin: 8px;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.proceed-btn {
+  background: #4caf50;
+  color: white;
+}
+
+.cancel-btn {
+  background: #f44336;
+  color: white;
+}
+
+.digitize-btn {
+  margin-left: 20px;
+  padding: 6px 14px;
+  background: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
 }

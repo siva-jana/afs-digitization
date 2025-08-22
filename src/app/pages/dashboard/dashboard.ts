@@ -30,10 +30,10 @@ export class Dashboard implements OnInit {
 
   showPopup = false;
   showMetricsPopup = false;
-  userMetrics = { digitizedFiles: 0, digitizedPages: 0, failedFiles: 0 ,updatedAt: '' };
+  //userMetrics = { digitizedFiles: 0, digitizedPages: 0, failedFiles: 0 ,updatedAt: '' };
   globalMetrics = { digitizedFiles: 0, digitizedPages: 0, failedFiles: 0 ,updatedAt: '' };
 
-  constructor(private router: Router, private http: HttpClient) {}
+  constructor(private router: Router, private http: HttpClient,  ) {}
 
  filters = {
   states: [] as any[],
@@ -62,8 +62,12 @@ isAudited = false;
 
 ngOnInit(): void {
   this.getAFSMetrics();
-  this.loadFilters();  // Load filters when component initializes
+  this.loadFilters(); 
+  
+  
+  // Load filters when component initializes
 }
+
 
 loadFilters() {
   const url = `http://localhost:8080/api/v1/afs-digitization/afs-filters`;
@@ -97,27 +101,32 @@ filteredFiles: {
   ulbCode: string;
   fileName: string;
   fileUrl: string;
+  statusText?: string;
    localFile?: File;
   previewUrl?: string;
   pageCount?: number;
-   timestamp?: number;
+  selected?: boolean;
  
 }[] = [];
 
 
 
-// handleFileUpload(event: any, file: any) {
-//   const selectedFile = event.target.files[0];
+private updateFileName(originalName: string, suffix: string): string {
+  if (!originalName) return '';
 
-//   if (!selectedFile || selectedFile.type !== 'application/pdf') {
-//     alert('Please upload a valid PDF file.');
-//     return;
-//   }
+  // Strip extension
+  const parts = originalName.split('.');
+  const ext = parts.length > 1 ? '.' + parts.pop() : '';
+  const base = parts.join('.');
 
-//   file.localFile = selectedFile;
-//   file.previewUrl = URL.createObjectURL(selectedFile);
-//   file.fileName = selectedFile.name;
-// }
+  // Always remove any old suffix (_ULB_UPLOADED / _AFS_UPLOADED)
+  const cleanedBase = base.replace(/_(ULB_UPLOADED|AFS_UPLOADED)$/i, '');
+
+  return `${cleanedBase}_${suffix}${ext}`;
+}
+
+
+
 async handleFileUpload(event: any, file: any) {
   const selectedFile = event.target.files[0];
 
@@ -128,7 +137,8 @@ async handleFileUpload(event: any, file: any) {
 
   file.localFile = selectedFile;
   file.previewUrl = URL.createObjectURL(selectedFile);
-  file.fileName = selectedFile.name;
+  // file.fileName = selectedFile.name;
+   file.fileName = this.updateFileName(selectedFile.name, 'AFS_UPLOADED');
 
   // Extract page count from local file
   const arrayBuffer = await selectedFile.arrayBuffer();
@@ -174,96 +184,91 @@ storageBaseUrl = environment.STORAGE_BASEURL;
 
 
 
+
 applyFilters() {
   this.filtersApplied = true;
   this.filteredFiles = [];
 
   const baseUrl = 'http://localhost:8080/api/v1/ledger/ulb-financial-data/files';
+  const statusUrlBase = 'http://localhost:8080/api/v1/afs-digitization/afs-form-status-by-ulb';
   const financialYear = this.selectedYear;
   const auditType = this.isAudited ? 'audited' : 'unAudited';
 
-  //const selectedDocName = this.filters.documentTypes.find(d => d.key === this.selectedDocType)?.name || '';
   const selectedDocName =
-  this.filters.documentTypes
-    .flatMap(group => group.items)
-    .find(doc => doc.key === this.selectedDocType)?.name || '';
-
+    this.filters.documentTypes
+      .flatMap(group => group.items)
+      .find(doc => doc.key === this.selectedDocType)?.name || '';
 
   const requests = this.selectedCities.map(cityName => {
     const city = this.filters.allCities.find(c => c.name === cityName);
-    if (!city) return of([]); // if city not found, skip it
+    if (!city) return of([]);
 
     const stateName = this.filters.states.find(s => s._id === city.stateId)?.name || '';
 
-    const url = `${baseUrl}/${city._id}?financialYear=${financialYear}&auditType=${auditType}`;
+    const fileUrl = `${baseUrl}/${city._id}?financialYear=${financialYear}&auditType=${auditType}`;
+    const statusUrl = `${statusUrlBase}/${city._id}?financialYear=${financialYear}&auditType=${auditType}`;
 
-    return this.http.get<any>(url).pipe(
-      map(res => {
-        const matchedPdfs = (res.success && res.data.pdf)
-          ? res.data.pdf.filter((file: any) => file.name?.trim() === selectedDocName?.trim())
+    // combine 2 requests
+    return forkJoin({
+      files: this.http.get<any>(fileUrl).pipe(catchError(() => of(null))),
+      status: this.http.get<any>(statusUrl).pipe(catchError(() => of(null)))
+    }).pipe(
+      map(({ files, status }) => {
+        const matchedPdfs = (files?.success && files.data?.pdf)
+          ? files.data.pdf.filter((f: any) => f.name?.trim() === selectedDocName?.trim())
           : [];
 
+        const statusText = status?.data?.statusText || 'No Status';
+
         if (!matchedPdfs || matchedPdfs.length === 0) {
-          // return fallback row
           return [{
             stateName,
             cityName: city.name,
             ulbCode: city.code || '',
             fileName: 'No data available',
-            fileUrl: ''
+            fileUrl: '',
+            statusText
           }];
         }
 
-        // return real files
         return matchedPdfs.map((file: any) => ({
           stateName,
           cityName: city.name,
           ulbCode: city.code || '',
           fileName: file.name,
           fileUrl: file.url,
-          timestamp: res.timestamp
-
-      
+          timestamp: files.timestamp,
+          statusText
         }));
-      }),
-      catchError(err => {
-        // also return fallback row if API fails
-        return of([{
-          stateName,
-          cityName: city.name,
-          ulbCode: city.code || '',
-          fileName: 'Error loading data',
-          fileUrl: ''
-        }]);
       })
     );
   });
 
-  forkJoin(requests).subscribe((results: any[]) => {
-    this.filteredFiles = results.flat()
-    .filter(file => file.fileName !== 'No data available' && file.fileName !== 'Error loading data');
 
-    this.filteredFiles.forEach(file => {
-  if (file.fileUrl) {
-    const fullUrl = this.storageBaseUrl + file.fileUrl;
-    this.getPdfPageCount(fullUrl).then(pageCount => {
-      file.pageCount = pageCount;
+  forkJoin(requests).subscribe((results: any[]) => {
+  this.filteredFiles = results.flat()
+    .filter(file => file.fileName !== 'No data available' && file.fileName !== 'Error loading data')
+    .map(file => {
+      file.fileName = this.updateFileName(file.fileName, 'ULB_UPLOADED.pdf'); // default on load
+      return file;
     });
-  }
+
+  this.filteredFiles.forEach(file => {
+    if (file.fileUrl) {
+      const fullUrl = this.storageBaseUrl + file.fileUrl;
+      this.getPdfPageCount(fullUrl).then(pageCount => {
+        file.pageCount = pageCount;
+      });
+    }
+  });
 });
 
-  
-  });
 }
 
 
 
-
-
-
-
 resetFilters() {
-  this.selectedState = '';
+  this.selectedState ='';
   this.selectedPopulation = '';
   this.selectedCities = [];
   this.selectedYear = '';
@@ -353,6 +358,9 @@ onPopulationOrStateChange() {
   this.selectedCities = matchingCities.map(c => c.name);
 }
 
+
+
+
 citySearchText = '';
 
 get filteredCities() {
@@ -394,6 +402,10 @@ selectState(state: any) {
   this.stateSearchText = state.name; // display selected name
   this.onPopulationOrStateChange();
    this.stateDropdownOpen = false; 
+
+
+  
+
 }
 
 
@@ -406,11 +418,6 @@ selectState(state: any) {
     this.showMetricsPopup = !this.showMetricsPopup;
   }
 
-  getUserSuccessRate(): number {
-  const total = this.userMetrics.digitizedFiles + this.userMetrics.failedFiles;
-  if (total === 0) return 0;
-  return Math.round((this.userMetrics.digitizedFiles / total) * 100);
-}
 
 getGlobalSuccessRate(): number {
   const total = this.globalMetrics.digitizedFiles + this.globalMetrics.failedFiles;
@@ -437,11 +444,11 @@ getGlobalSuccessRate(): number {
 
 
   getAFSMetrics() {
-    const url = `http://localhost:8080/api/v1/afs-digitization/afs-metrics?username=${this.username}`;
+    const url = `http://localhost:8080/api/v1/afs-digitization/afs-metrics`;
     this.http.get<any>(url).subscribe({
       next: (res) => {
         if (res.success) {
-          this.userMetrics = res.user;
+          //this.userMetrics = res.user;
           this.globalMetrics = res.global;
         }
       },
@@ -456,5 +463,50 @@ getGlobalSuccessRate(): number {
   console.log('Download button clicked');
   alert('Download feature coming soon! Will export filtered data as Excel.');
 }
+
+selectAll = false;
+selectedFilesCount = 0;
+totalSelectedPages = 0;
+
+updateSelection() {
+  const selectedFiles = this.filteredFiles.filter(f => f.selected);
+
+  this.selectedFilesCount = selectedFiles.length;
+  this.totalSelectedPages = selectedFiles.reduce((sum, f) => sum + (f.pageCount || 0), 0);
+
+  // Update "select all" state
+  this.selectAll = selectedFiles.length === this.filteredFiles.length;
+}
+
+toggleSelectAll() {
+  this.filteredFiles.forEach(f => (f.selected = this.selectAll));
+  this.updateSelection();
+}
+
+
+showDigitizePopup = false;
+digitizeStatus: string = '';
+
+openDigitizePopup() {
+  this.showDigitizePopup = true;
+  this.digitizeStatus = '';
+}
+
+closeDigitizePopup() {
+  this.showDigitizePopup = false;
+  this.digitizeStatus = '';
+}
+
+proceedDigitization() {
+  // Here you can later call backend digitization API
+  console.log("Proceeding with digitization for", this.selectedFilesCount, "files");
+  
+  // Simulate success
+  setTimeout(() => {
+    this.digitizeStatus = 'done';
+  }, 500);
+}
+
+
 
 }

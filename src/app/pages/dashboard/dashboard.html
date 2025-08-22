@@ -19,23 +19,6 @@
           </div>
         </div>
       </div>
-
-      <div class="metrics-section">
-        <h3>You have <span class="highlight">digitized</span> {{ userMetrics.digitizedPages + userMetrics.failedFiles }} pages in {{ userMetrics.digitizedFiles + userMetrics.failedFiles }} files</h3>
-        <div class="metrics-grid">
-          <div class="metrics-left">
-            <p>Files Digitized: {{ userMetrics.digitizedFiles }}</p>
-            <p>Pages Digitized: {{ userMetrics.digitizedPages }}</p>
-            <p>Files Failed:<span class="error-number">{{ userMetrics.failedFiles }}</span></p>
-            <p>Pages Failed:<span class="error-number">{{ userMetrics.failedFiles }}</span></p>
-          </div>
-          <div class="vertical-separator"></div>
-          <div class="metrics-right">
-            <div class="success-rate">{{ getUserSuccessRate() }}%</div>
-            <div class="success-label">Successful Digitization</div>
-          </div>
-        </div>
-      </div>
     </div>
     
     
@@ -87,18 +70,7 @@
 
      
      
-      <!-- <div class="custom-multiselect">
-       <label class="filter-label">City</label>
-      <input type="text" [(ngModel)]="citySearchText" placeholder="Search city..." class="city-search-box" />
-      
-      <div class="city-checkboxes scroll-box">
-        <label *ngFor="let c of filteredCities" class="checkbox-item">
-          <input type="checkbox" [value]="c.name" [checked]="selectedCities.includes(c.name)"
-            (change)="toggleCitySelection(c.name, $any($event.target).checked)" />
-         {{ c.name }} 
-        </label>
-      </div>
-      </div> -->
+  
 
       <label class="filter-label">City</label>
 <input
@@ -108,17 +80,7 @@
   class="city-search-box"
 />
 
-<!-- <div class="city-checkboxes scroll-box">
-  <label *ngFor="let c of filteredCities" class="checkbox-item">
-    <input
-      type="checkbox"
-      [value]="c.name"
-      [checked]="selectedCities.includes(c.name)"
-      (change)="toggleCitySelection(c.name, $any($event.target).checked)"
-    />
-    {{ c.name }}
-  </label>
-</div> -->
+
 <div *ngIf="selectedState && selectedPopulation">
 <div class="city-checkboxes scroll-box">
   <label *ngFor="let c of filteredCities" class="checkbox-item">
@@ -142,11 +104,6 @@
       </select>
 
       
-  <!-- <label>Document Type</label>
-  <select [(ngModel)]="selectedDocType">
-  <option value="">Select Document Type</option>
-  <option *ngFor="let d of filters.documentTypes" [ngValue]="d.key">{{ d.name }}</option>
-</select> -->
 <label>Document Type</label>
 <div class="grouped-dropdown">
   <div *ngFor="let group of filters.documentTypes">
@@ -161,16 +118,7 @@
 </div>
 
 
-
-
-<!-- <div class="audited-checkbox-container">
-      <label>
-        <input type="checkbox" [(ngModel)]="isAudited"
-          />
-        Audited
-      </label>
-  </div> -->
-  <div class="audited-radio-container">
+<div class="audited-radio-container" *ngIf="selectedDocType !== '16th_fc'">
   <label>
     <input
       type="radio"
@@ -192,6 +140,7 @@
 </div>
 
 
+
       <button class="apply-btn" (click)="applyFilters()">Apply</button>
     </div>
 
@@ -206,21 +155,24 @@
      <table class="afs-table" *ngIf="filteredFiles.length > 0">
      <thead>
       <tr>
+      <th>
+       SELECT TO DIGITIZE                <input type="checkbox" [(ngModel)]="selectAll" (change)="toggleSelectAll()" /> ALL
+      </th>
       <th>State</th>
       <th>City
         <span class="sort-buttons">
-         <button (click)="sortByCity('asc')">A-Z</button>
-         <button (click)="sortByCity('desc')">Z-A</button>
+         <button (click)="sortByCity('asc')">⬆️</button>
+         <button (click)="sortByCity('desc')">⬇️</button>
         </span>
         </th>
       <th>ULB Code
         <span class="sort-buttons">
-        <button (click)="sortByULBCode('asc')">A-Z</button>
-        <button (click)="sortByULBCode('desc')">Z-A</button>
+        <button (click)="sortByULBCode('asc')">⬆️</button>
+        <button (click)="sortByULBCode('desc')">⬇️</button>
         </span>
       </th>
-      <th>PDF uploaded by ULB</th>
-      <!-- <th>Page Count</th> -->
+      <th>PDF DOCUMENT</th>
+      
 
       <th>Form Status</th>
       <th>Digitize Status</th>
@@ -231,36 +183,12 @@
   </thead>
    <tbody>
     <tr *ngFor="let file of filteredFiles">
+       <td>
+        <input type="checkbox" [(ngModel)]="file.selected" (change)="updateSelection()" />
+      </td>
       <td>{{ file.stateName }}</td>
       <td>{{ file.cityName }}</td>
       <td>{{ file.ulbCode }}</td>
-     
-<!-- <td>
-
-  <ng-container *ngIf="file.previewUrl; else useBackendFile">
-    <a [href]="file.previewUrl" target="_blank">{{ file.fileName }}</a>
-  </ng-container>
-  <ng-template #useBackendFile>
-    <ng-container *ngIf="file.fileUrl; else noFileAvailable">
-      <a [href]="storageBaseUrl + file.fileUrl" target="_blank">{{ file.fileName }}</a>
-    </ng-container>
-    <ng-template #noFileAvailable>
-      {{ file.fileName }}
-  </ng-template>
-  </ng-template>
-
-  <div style="margin-top: 4px;">
-    <button class="upload-btn" (click)="triggerFileInput(file)">Upload</button>
-    <input type="file"
-           accept="application/pdf"
-           style="display: none"
-           (change)="handleFileUpload($event, file)"
-           #fileInput
-           [attr.data-id]="file.cityName + file.ulbCode" />
-  </div>
-</td> -->
-
-    <!-- <td>{{ file.pageCount || '—' }}</td> -->
 
 <td>
 
@@ -302,7 +230,8 @@
   </div>
 </td>
 
-      <td></td>
+     <td>{{ file.statusText }}</td>
+      <!-- <td></td> -->
       <td></td>
       <td></td>
       <td></td>
@@ -310,6 +239,36 @@
     </tr>
   </tbody>
 </table>
+<div *ngIf="selectedFilesCount > 0" class="selection-summary">
+  <strong>{{ totalSelectedPages }} pages</strong> from 
+  <strong>{{ selectedFilesCount }} PDF file(s)</strong> selected to digitize
+
+</div>
+
+<div>
+     
+  <button class="digitize-btn" (click)="openDigitizePopup()">Digitize & Download</button>
+</div>
+<!-- Digitize Popup -->
+<div class="popup-overlay" *ngIf="showDigitizePopup">
+  <div class="popup-box">
+    <h3>Confirm Digitization</h3>
+    <p>
+      You have selected <strong>{{ selectedFilesCount }}</strong> file(s) 
+      containing <strong>{{ totalSelectedPages }}</strong> pages.
+    </p>
+
+    <div *ngIf="digitizeStatus === ''">
+      <button class="proceed-btn" (click)="proceedDigitization()">Proceed</button>
+      <button class="cancel-btn" (click)="closeDigitizePopup()">Cancel</button>
+    </div>
+
+    <div *ngIf="digitizeStatus === 'done'">
+      <p style="color: green; font-weight: bold;">✅ Done</p>
+      <button (click)="closeDigitizePopup()">Close</button>
+    </div>
+  </div>
+</div>
 </div>
 <div *ngIf="filtersApplied && filteredFiles.length === 0" class="no-files-msg">
   No files found for the selected filters.

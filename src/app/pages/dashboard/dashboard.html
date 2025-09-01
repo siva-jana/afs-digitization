@@ -170,9 +170,19 @@
     <div class="placeholder-section" *ngIf="!filtersApplied">
       <div><h4>select filters on the left pane to see the files</h4></div>
       </div>
+      <div *ngIf="isLoading" class="loader-overlay">
+  <div class="spinner"></div>
+  <p>Loading data...</p>
+</div>
+<!-- Loader -->
+<div *ngIf="isLoading" class="loader-overlay">
+  <div class="spinner"></div>
+  <p>Please wait...</p>
+</div>
+
       <div class="file-results" *ngIf="filtersApplied && filteredFiles.length > 0">
       <h3>Available Files</h3>
- 
+     
      <table class="afs-table" *ngIf="filteredFiles.length > 0">
      <thead>
       <tr>
@@ -203,7 +213,7 @@
     </tr>
   </thead>
    <tbody>
-    <tr *ngFor="let file of filteredFiles" [ngClass]="{'active-row':  activeRows.has(file.cityName + file.ulbCode)}">
+    <tr *ngFor="let file of filteredFiles" [ngClass]="{'active-row':  activeRow === file}">
        <td>
         <input type="checkbox" [(ngModel)]="file.selected" (change)="updateSelection()" />
       </td>

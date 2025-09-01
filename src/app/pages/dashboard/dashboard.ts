@@ -56,6 +56,8 @@ selectedCities: string[] = [];
 selectedYear = '';
 selectedDocType = '';
 isAudited = false;
+isLoading = false;
+
 
 @HostListener('document:click', ['$event'])
 handleClickOutside(event: Event) {
@@ -63,7 +65,7 @@ handleClickOutside(event: Event) {
 
   // if click is NOT inside table, clear all highlights
   if (!target.closest('table.afs-table')) {
-    this.activeRows.clear();
+    this.activeRow = null;
   }
 }
 
@@ -76,12 +78,12 @@ ngOnInit(): void {
   
   // Load filters when component initializes
 }
-activeRows = new Set<string>();
+activeRow: any = null;
 
 setActiveRow(file: any) {
-  const rowId = file.cityName + file.ulbCode;
-  this.activeRows.add(rowId);
+  this.activeRow = file;
 }
+
 
 
 loadFilters() {
@@ -174,25 +176,27 @@ async handleFileUpload(event: Event, file: any) {
     return;
   }
 
-  // extract page count
-  const arrayBuffer = await selectedFile.arrayBuffer();
-  const pdfDoc = await PDFDocument.load(arrayBuffer);
-  const pageCount = pdfDoc.getPageCount();
-
-  // build formData
-  const formData = new FormData();
-  formData.append('file', selectedFile);
-  formData.append('ulbId', file.ulbId);
-  formData.append('financialYear', this.selectedYear);
-  formData.append('auditType', this.isAudited ? 'audited' : 'unAudited');
-
-  const docTypeName =
-    this.filters.documentTypes
-      .flatMap(group => group.items)
-      .find(doc => doc.key === this.selectedDocType)?.name || '';
-  formData.append('docType', docTypeName);
+  this.isLoading = true; // 👈 start loader
 
   try {
+    // extract page count
+    const arrayBuffer = await selectedFile.arrayBuffer();
+    const pdfDoc = await PDFDocument.load(arrayBuffer);
+    const pageCount = pdfDoc.getPageCount();
+
+    // build formData
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    formData.append('ulbId', file.ulbId);
+    formData.append('financialYear', this.selectedYear);
+    formData.append('auditType', this.isAudited ? 'audited' : 'unAudited');
+
+    const docTypeName =
+      this.filters.documentTypes
+        .flatMap(group => group.items)
+        .find(doc => doc.key === this.selectedDocType)?.name || '';
+    formData.append('docType', docTypeName);
+
     const url = `http://localhost:8080/api/v1/afs-digitization/afs-file`;
     const response: any = await this.http.post(url, formData).toPromise();
 
@@ -201,7 +205,7 @@ async handleFileUpload(event: Event, file: any) {
 
       file.extraFiles = file.extraFiles || [];
 
-      //  Replace existing docType entry if found
+      // Replace existing docType entry if found
       const existingIndex = file.extraFiles.findIndex(
         (ef: any) => ef.docType === docTypeName
       );
@@ -219,14 +223,15 @@ async handleFileUpload(event: Event, file: any) {
         file.extraFiles.push(newEntry); // first-time upload
       }
 
-      //  Update button state
-      file.hasAFS = true;
+      file.hasAFS = true; // mark as uploaded
     } else {
       alert('Upload failed: ' + (response.message || 'Unknown error'));
     }
   } catch (err) {
     console.error('Error uploading file:', err);
     alert('Upload failed. Please try again.');
+  } finally {
+    this.isLoading = false; // 👈 stop loader
   }
 }
 
@@ -354,19 +359,26 @@ storageBaseUrl = environment.STORAGE_BASEURL;
 
 
 applyFilters() {
+
+  
+  if (!this.selectedYear) {
+    alert("⚠️ Please select a year");   // simple browser popup
+    return;
+  }
   this.filtersApplied = true;
   this.filteredFiles = [];
+  this.isLoading = true;   // 👈 start loader
+
+  
 
   const baseUrl = 'http://localhost:8080/api/v1/ledger/ulb-financial-data/files';
   const statusUrlBase = 'http://localhost:8080/api/v1/afs-digitization/afs-form-status-by-ulb';
   const afsUrlBase = 'http://localhost:8080/api/v1/afs-digitization/afs-file';
   const excelUrlBase = 'http://localhost:8080/api/v1/afs-digitization/afs-excel-file';
 
-
   const financialYear = this.selectedYear;
   const auditType = this.isAudited ? 'audited' : 'unAudited';
 
-  // 👇 get docType name from filters
   const selectedDocName =
     this.filters.documentTypes
       .flatMap(group => group.items)
@@ -380,88 +392,91 @@ applyFilters() {
 
     const fileUrl = `${baseUrl}/${city._id}?financialYear=${financialYear}&auditType=${auditType}`;
     const statusUrl = `${statusUrlBase}/${city._id}?financialYear=${financialYear}&auditType=${auditType}`;
-    //  include docType in AFS API call
     const afsUrl = `${afsUrlBase}?ulbId=${city._id}&financialYear=${financialYear}&auditType=${auditType}&docType=${encodeURIComponent(selectedDocName)}`;
     const excelUrl = `${excelUrlBase}?ulbId=${city._id}&financialYear=${financialYear}&auditType=${auditType}&docType=${encodeURIComponent(selectedDocName)}`;
 
-    // combine 3 requests now
     return forkJoin({
-  files: this.http.get<any>(fileUrl).pipe(catchError(() => of(null))),
-  status: this.http.get<any>(statusUrl).pipe(catchError(() => of(null))),
-  afs: this.http.get<any>(afsUrl).pipe(catchError(() => of(null))),
-  excel: this.http.get<any>(excelUrl).pipe(catchError(() => of(null)))
-}).pipe(
-  map(({ files, status, afs, excel }) => {
-    const matchedPdfs = (files?.success && files.data?.pdf)
-      ? files.data.pdf.filter((f: any) => f.name?.trim() === selectedDocName?.trim())
-      : [];
+      files: this.http.get<any>(fileUrl).pipe(catchError(() => of(null))),
+      status: this.http.get<any>(statusUrl).pipe(catchError(() => of(null))),
+      afs: this.http.get<any>(afsUrl).pipe(catchError(() => of(null))),
+      excel: this.http.get<any>(excelUrl).pipe(catchError(() => of(null)))
+    }).pipe(
+      map(({ files, status, afs, excel }) => {
+        const matchedPdfs = (files?.success && files.data?.pdf)
+          ? files.data.pdf.filter((f: any) => f.name?.trim() === selectedDocName?.trim())
+          : [];
 
-    const statusText = status?.data?.statusText || 'No Status';
+        const statusText = status?.data?.statusText || 'No Status';
 
-    if (!matchedPdfs || matchedPdfs.length === 0) {
-      return [{
-        stateName,
-        cityName: city.name,
-        ulbCode: city.code || '',
-        ulbId: city._id,
-        fileName: 'No data available',
-        fileUrl: '',
-        statusText,
-        excelFiles: excel?.fileGroup?.files || []   // 👈 attach excel files
-      }];
-    }
+        if (!matchedPdfs || matchedPdfs.length === 0) {
+          return [{
+            stateName,
+            cityName: city.name,
+            ulbCode: city.code || '',
+            ulbId: city._id,
+            fileName: 'No data available',
+            fileUrl: '',
+            statusText,
+            excelFiles: excel?.fileGroup?.files || []
+          }];
+        }
 
-    const rows = matchedPdfs.map((file: any) => ({
-      stateName,
-      cityName: city.name,
-      ulbCode: city.code || '',
-      ulbId: city._id,
-      fileName: this.updateFileName(file.name, 'ULB_UPLOADED'),
-      fileUrl: file.url,
-      timestamp: files.timestamp,
-      statusText,
-      extraFiles: [] as any[],
-      excelFiles: excel?.fileGroup?.files || []   // 👈 attach excel files
-    }));
+        const rows = matchedPdfs.map((file: any) => ({
+          stateName,
+          cityName: city.name,
+          ulbCode: city.code || '',
+          ulbId: city._id,
+          fileName: this.updateFileName(file.name, 'ULB_UPLOADED'),
+          fileUrl: file.url,
+          timestamp: files.timestamp,
+          statusText,
+          extraFiles: [] as any[],
+          excelFiles: excel?.fileGroup?.files || []
+        }));
 
-    // if afs file exists, push into extraFiles array
-    if (afs?.success && afs.file?.fileUrl) {
-      rows.forEach((r: any) => {
-        r.extraFiles.push({
-          fileName: this.updateFileName(afs.file.docType || 'afs.pdf', 'AFS_UPLOADED'),
-          fileUrl: afs.file.fileUrl
-        });
-      });
-    }
+        if (afs?.success && afs.file?.fileUrl) {
+          rows.forEach((r: any) => {
+            r.extraFiles.push({
+              fileName: this.updateFileName(afs.file.docType || 'afs.pdf', 'AFS_UPLOADED'),
+              fileUrl: afs.file.fileUrl
+            });
+          });
+        }
 
-    return rows;
-  })
-);
-
+        return rows;
+      })
+    );
   });
 
-  forkJoin(requests).subscribe((results: any[]) => {
-    this.filteredFiles = results.flat()
-      .filter(file => file.fileName !== 'No data available' && file.fileName !== 'Error loading data');
+  forkJoin(requests).subscribe({
+    next: (results: any[]) => {
+      this.filteredFiles = results.flat()
+        .filter(file => file.fileName !== 'No data available' && file.fileName !== 'Error loading data');
 
-    this.filteredFiles.forEach(file => {
-      if (file.fileUrl) {
-        const fullUrl = this.storageBaseUrl + file.fileUrl;
-        this.getPdfPageCount(fullUrl).then(pageCount => {
-          file.pageCount = pageCount;
-        });
-      }
-
-      // also count pages for afs extraFiles
-      if (file.extraFiles?.length) {
-        file.extraFiles.forEach((ef: any) => {
-          const fullUrl = ef.fileUrl;
+      this.filteredFiles.forEach(file => {
+        if (file.fileUrl) {
+          const fullUrl = this.storageBaseUrl + file.fileUrl;
           this.getPdfPageCount(fullUrl).then(pageCount => {
-            ef.pageCount = pageCount;
+            file.pageCount = pageCount;
           });
-        });
-      }
-    });
+        }
+
+        if (file.extraFiles?.length) {
+          file.extraFiles.forEach((ef: any) => {
+            const fullUrl = ef.fileUrl;
+            this.getPdfPageCount(fullUrl).then(pageCount => {
+              ef.pageCount = pageCount;
+            });
+          });
+        }
+      });
+    },
+    error: (err) => {
+      console.error('Error fetching data:', err);
+    },
+    complete: () => {
+      this.isLoading = false;   // 👈 stop loader
+    }
   });
 }
 

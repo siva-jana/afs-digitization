@@ -70,7 +70,18 @@
 
      
      
-  
+      <!-- <div class="custom-multiselect">
+       <label class="filter-label">City</label>
+      <input type="text" [(ngModel)]="citySearchText" placeholder="Search city..." class="city-search-box" />
+      
+      <div class="city-checkboxes scroll-box">
+        <label *ngFor="let c of filteredCities" class="checkbox-item">
+          <input type="checkbox" [value]="c.name" [checked]="selectedCities.includes(c.name)"
+            (change)="toggleCitySelection(c.name, $any($event.target).checked)" />
+         {{ c.name }} 
+        </label>
+      </div>
+      </div> -->
 
       <label class="filter-label">City</label>
 <input
@@ -80,7 +91,17 @@
   class="city-search-box"
 />
 
-
+<!-- <div class="city-checkboxes scroll-box">
+  <label *ngFor="let c of filteredCities" class="checkbox-item">
+    <input
+      type="checkbox"
+      [value]="c.name"
+      [checked]="selectedCities.includes(c.name)"
+      (change)="toggleCitySelection(c.name, $any($event.target).checked)"
+    />
+    {{ c.name }}
+  </label>
+</div> -->
 <div *ngIf="selectedState && selectedPopulation">
 <div class="city-checkboxes scroll-box">
   <label *ngFor="let c of filteredCities" class="checkbox-item">
@@ -156,7 +177,7 @@
      <thead>
       <tr>
       <th>
-       SELECT TO DIGITIZE                <input type="checkbox" [(ngModel)]="selectAll" (change)="toggleSelectAll()" /> ALL
+       SELECT TO DIGITIZE <input type="checkbox" [(ngModel)]="selectAll" (change)="toggleSelectAll()" /> ALL
       </th>
       <th>State</th>
       <th>City
@@ -182,34 +203,32 @@
     </tr>
   </thead>
    <tbody>
-    <tr *ngFor="let file of filteredFiles">
+    <tr *ngFor="let file of filteredFiles" [ngClass]="{'active-row':  activeRows.has(file.cityName + file.ulbCode)}">
        <td>
         <input type="checkbox" [(ngModel)]="file.selected" (change)="updateSelection()" />
       </td>
+     
       <td>{{ file.stateName }}</td>
       <td>{{ file.cityName }}</td>
       <td>{{ file.ulbCode }}</td>
 
 <td>
-
-  <!-- Preview for locally uploaded file -->
+  <!-- Main Ledger file -->
   <ng-container *ngIf="file.previewUrl; else useBackendFile">
-    <a [href]="file.previewUrl" target="_blank">{{ file.fileName }}</a>
+    <a [href]="file.previewUrl" target="_blank" (click)="setActiveRow(file); $event.stopPropagation()" >{{ file.fileName }}</a>
     <div class="page-count" *ngIf="file.pageCount !== undefined">
       ({{ file.pageCount }} pages)
     </div>
   </ng-container>
 
-  <!-- Fallback to backend-stored file -->
   <ng-template #useBackendFile>
     <ng-container *ngIf="file.fileUrl; else noFileAvailable">
-      <a [href]="storageBaseUrl + file.fileUrl" target="_blank">{{ file.fileName }}</a>
+      <a [href]="storageBaseUrl + file.fileUrl" target="_blank" (click)="setActiveRow(file); $event.stopPropagation()">{{ file.fileName }}</a>
       <div class="page-count" *ngIf="file.pageCount !== undefined">
         ({{ file.pageCount }} pages)
       </div>
     </ng-container>
 
-    <!-- If no file available -->
     <ng-template #noFileAvailable>
       {{ file.fileName }}
       <div class="page-count" *ngIf="file.pageCount !== undefined">
@@ -218,9 +237,24 @@
     </ng-template>
   </ng-template>
 
+  <!-- Separator -->
+  <hr class="separator" style="margin-top: 44px;" />
+
+  <!-- AFS Extra Files -->
+  <ng-container *ngIf="file.extraFiles && file.extraFiles.length > 0">
+    <div *ngFor="let ef of file.extraFiles" style="margin-top: 4px;">
+      <a [href]="ef.fileUrl" target="_blank" (click)="setActiveRow(file); $event.stopPropagation()">{{ ef.fileName }}</a>
+      <div class="page-count" *ngIf="ef.pageCount !== undefined">
+        ({{ ef.pageCount }} pages)
+      </div>
+    </div>
+  </ng-container>
+
   <!-- Upload Button -->
   <div style="margin-top: 4px;">
-    <button class="upload-btn" (click)="triggerFileInput(file)">Upload</button>
+    <button class="upload-btn" (click)="setActiveRow(file); triggerFileInput(file)">
+      {{ file.extraFiles && file.extraFiles.length > 0 ? 'Re-upload' : 'Upload' }}
+    </button>
     <input type="file"
            accept="application/pdf"
            style="display: none"
@@ -230,12 +264,41 @@
   </div>
 </td>
 
-     <td>{{ file.statusText }}</td>
+
+
+     <td>
+      {{ file.statusText }}
+      <hr class="separator" style="margin-bottom: 42px;" />
+
+     </td>
       <!-- <td></td> -->
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+<td>
+  <div *ngIf="file.excelFiles && file.excelFiles.length > 0; else noExcel">
+    <ng-container *ngFor="let excel of file.excelFiles; let i = index">
+      DIGITIZED
+      <a [href]="excel.fileUrl" target="_blank">
+         excelfile.xlsx
+      </a>
+      <!-- Separator between files (not after the last one) -->
+      <hr class="separator" *ngIf="i < file.excelFiles.length - 1" />
+    </ng-container>
+  </div>
+  <ng-template #noExcel>
+    NOT DIGITIZED
+  </ng-template>
+</td>
+
+      <td><hr class="separator" /></td>
+      <td>
+         <div *ngIf="file.excelFiles && file.excelFiles.length > 0">
+          <ng-container *ngFor="let excel of file.excelFiles; let i = index">
+             {{ excel.uploadedAt | date:'short' }}
+            <!-- Separator between timestamps (not after the last one) -->
+             <hr class="separator" *ngIf="i < file.excelFiles.length - 1" />
+          </ng-container>
+        </div>
+      </td>
+      <td><hr class="separator" /></td>
     </tr>
   </tbody>
 </table>
@@ -264,7 +327,7 @@
     </div>
 
     <div *ngIf="digitizeStatus === 'done'">
-      <p style="color: green; font-weight: bold;">✅ Done</p>
+      <p style="color: green; font-weight: bold;"> Done</p>
       <button (click)="closeDigitizePopup()">Close</button>
     </div>
   </div>

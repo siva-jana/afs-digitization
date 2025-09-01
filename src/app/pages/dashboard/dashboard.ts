@@ -34,6 +34,7 @@ export class Dashboard implements OnInit {
   //userMetrics = { digitizedFiles: 0, digitizedPages: 0, failedFiles: 0 ,updatedAt: '' };
   globalMetrics = { digitizedFiles: 0, digitizedPages: 0, failedFiles: 0 ,updatedAt: '' };
 
+
   constructor(private router: Router, private http: HttpClient,  ) {}
 
  filters = {
@@ -127,10 +128,17 @@ filteredFiles: {
   selected?: boolean; 
   docType?: string;
    extraFiles?: { fileName: string; fileUrl: string; pageCount?: number }[];
-    excelFiles?: { _id: string; s3Key: string; fileUrl: string; uploadedAt: string }[];
+    excelFiles?: { _id: string; s3Key: string; fileUrl: string; uploadedAt: string; uploadedBy: string; }[];
  
 }[] = [];
 
+hasExcelFile(file: any, uploadedBy: string): boolean {
+  return !!file.excelFiles?.some((f: any) => f.uploadedBy === uploadedBy);
+}
+
+getExcelFiles(file: any, uploadedBy: string) {
+  return file.excelFiles?.filter((f: any) => f.uploadedBy === uploadedBy) || [];
+}
 
 
 private updateFileName(originalName: string, suffix: string): string {
@@ -779,6 +787,5 @@ proceedDigitization() {
   }, 500);
 }
 
-
-
 }
+

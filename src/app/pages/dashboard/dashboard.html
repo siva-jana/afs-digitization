@@ -283,20 +283,35 @@
      </td>
       <!-- <td></td> -->
 <td>
-  <div *ngIf="file.excelFiles && file.excelFiles.length > 0; else noExcel">
-    <ng-container *ngFor="let excel of file.excelFiles; let i = index">
-      DIGITIZED
-      <a [href]="excel.fileUrl" target="_blank">
-         excelfile.xlsx
-      </a>
-      <!-- Separator between files (not after the last one) -->
-      <hr class="separator" *ngIf="i < file.excelFiles.length - 1" />
-    </ng-container>
+  <!-- ULB Slot -->
+  <div *ngIf="hasExcelFile(file, 'ULB'); else noUlb">
+    DIGITIZED
+    <a *ngFor="let excel of getExcelFiles(file, 'ULB')" 
+       [href]="excel.fileUrl" 
+       target="_blank">
+       excelfile.xlsx
+    </a>
   </div>
-  <ng-template #noExcel>
+  <ng-template #noUlb>
+    NOT DIGITIZED
+  </ng-template>
+
+  <hr class="separator" />
+
+  <!-- AFS Slot -->
+  <div *ngIf="hasExcelFile(file, 'AFS'); else noAfs">
+    DIGITIZED
+    <a *ngFor="let excel of getExcelFiles(file, 'AFS')" 
+       [href]="excel.fileUrl" 
+       target="_blank">
+       excelfile.xlsx
+    </a>
+  </div>
+  <ng-template #noAfs>
     NOT DIGITIZED
   </ng-template>
 </td>
+
 
       <td><hr class="separator" /></td>
       <td>

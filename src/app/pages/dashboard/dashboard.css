@@ -568,34 +568,88 @@ button.upload-btn:hover {
   display: inline-block;
 }
 
-/* Popup box spacing */
+/* Overlay to cover the whole screen */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* dimmed background */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999; /* keep it above everything */
+}
+
+/* Popup box styling */
 .popup-box {
   background: #fff;
-  padding: 24px;
+  padding: 54px 380px;
   border-radius: 12px;
   min-width: 360px;
+  max-width: 90%;
   text-align: center;
-  box-shadow: 0 6px 14px rgba(0,0,0,0.3);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  animation: fadeInScale 0.25s ease-out;
 }
 
+/* Heading */
 .popup-box h3 {
   margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #222;
 }
 
+/* Paragraph */
 .popup-box p {
   margin-bottom: 20px;
   font-size: 14px;
   color: #444;
 }
 
+/* Buttons */
 .popup-box button {
-  margin: 10px;
-  padding: 8px 16px;
+  margin: 8px;
+  padding: 8px 18px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s ease;
 }
-.proceed-btn { background: #4caf50; color: white; } .cancel-btn { background: #f44336; color: white; }
+
+.proceed-btn {
+  background: #4caf50;
+  color: white;
+}
+
+.proceed-btn:hover {
+  background: #45a049;
+}
+
+.cancel-btn {
+  background: #f44336;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: #e53935;
+}
+
+/* Smooth popup animation */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 
 .active-row {
   background-color: #fff8c6; /* light yellow */
@@ -629,4 +683,83 @@ button.upload-btn:hover {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+
+/* Limit table height to ~5 rows, enable internal scrolling */
+.table-container {
+  max-height: 1050px; /* adjust height ~5 rows */
+  overflow-y: auto;
+  border: 1px solid #ccc;
+}
+
+/* Keep header fixed while scrolling */
+.afs-table thead th {
+  position: sticky;
+  top: 0;
+  background: #f9f9f9;
+  z-index: 2;
+}
+
+/* Pin summary + button below */
+.table-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  padding: 8px;
+  background: #fff;
+  border-top: 1px solid #ccc;
+}
+
+
+.date-range-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #444;
+}
+
+.date-range-header input[type="date"] {
+  padding: 6px 10px;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  background-color: #fff;
+  font-size: 14px;
+  color: #333;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  min-width: 70px;
+  cursor: pointer;
+}
+
+.date-range-header input[type="date"]:hover {
+  border-color: #999;
+}
+
+.date-range-header input[type="date"]:focus {
+  border-color: #2563eb;       /* professional blue highlight */
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.date-range-header span {
+  font-weight: 500;
+  color: #666;
+}
+/* Make date range inputs in table header smaller */
+.table thead .date-range-header input[type="date"],
+.table tbody .date-range-header input[type="date"] {
+  min-width: 110px;   /* reduce from 160px */
+  max-width: 120px;
+  font-size: 13px;
+  padding: 4px 6px;
+}
+
+/* Keep span small too */
+.table thead .date-range-header span,
+.table tbody .date-range-header span {
+  font-size: 13px;
+  margin: 0 2px;
 }

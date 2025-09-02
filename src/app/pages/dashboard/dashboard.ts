@@ -56,8 +56,13 @@ selectedPopulation = '';
 selectedCities: string[] = [];
 selectedYear = '';
 selectedDocType = '';
-isAudited = false;
+// isAudited = false;
+isAudited: string | null = null;
 isLoading = false;
+
+digitizedStartDate: string = '';
+digitizedEndDate: string = '';
+
 
 
 @HostListener('document:click', ['$event'])
@@ -368,9 +373,24 @@ storageBaseUrl = environment.STORAGE_BASEURL;
 
 applyFilters() {
 
-  
+  if (!this.selectedState) {
+    alert("⚠️ Please select a state");   // simple browser popup
+    return;
+  }
+  if (!this.selectedPopulation) {
+    alert("⚠️ Please select population");   // simple browser popup
+    return;
+  }
   if (!this.selectedYear) {
     alert("⚠️ Please select a year");   // simple browser popup
+    return;
+  }
+  if (!this.selectedDocType) {
+    alert("⚠️ Please select Document type");   // simple browser popup
+    return;
+  }
+ if (this.selectedDocType !== '16th_fc' && !this.isAudited) {
+    alert("⚠️ Please select Audit Status");
     return;
   }
   this.filtersApplied = true;
@@ -385,7 +405,7 @@ applyFilters() {
   const excelUrlBase = 'http://localhost:8080/api/v1/afs-digitization/afs-excel-file';
 
   const financialYear = this.selectedYear;
-  const auditType = this.isAudited ? 'audited' : 'unAudited';
+  const auditType = this.isAudited;
 
   const selectedDocName =
     this.filters.documentTypes
@@ -458,8 +478,30 @@ applyFilters() {
 
   forkJoin(requests).subscribe({
     next: (results: any[]) => {
-      this.filteredFiles = results.flat()
-        .filter(file => file.fileName !== 'No data available' && file.fileName !== 'Error loading data');
+  let mergedFiles = results.flat()
+    .filter((file: any) => file.fileName !== 'No data available' && file.fileName !== 'Error loading data');
+
+  // ✅ Date filter logic
+           // ✅ Date filter logic
+  if (this.digitizedStartDate && this.digitizedEndDate) {
+    const start = new Date(this.digitizedStartDate);
+    const end = new Date(this.digitizedEndDate);
+    end.setHours(23, 59, 59, 999); // include full end day
+
+    mergedFiles = mergedFiles.filter((file: any) => {
+      if (!file.excelFiles?.length) return false;
+
+      return file.excelFiles.some((excel: any) => {
+        const uploaded = new Date(excel.uploadedAt);
+        return uploaded >= start && uploaded <= end;
+      });
+    });
+  }
+
+  this.filteredFiles = mergedFiles;
+
+
+
 
       this.filteredFiles.forEach(file => {
         if (file.fileUrl) {
@@ -493,11 +535,13 @@ applyFilters() {
 
 resetFilters() {
   this.selectedState ='';
+  this.stateSearchText = ''; 
+  this.stateDropdownOpen = false;
   this.selectedPopulation = '';
   this.selectedCities = [];
   this.selectedYear = '';
   this.selectedDocType = '';
-  this.isAudited = false;
+  this.isAudited = null;
 }
 
 
@@ -695,8 +739,10 @@ getGlobalSuccessRate(): number {
   this.selectedDocType = selectedKey;
 
   // Auto-check "Audited" if selected document is 16th_fc
-  if (selectedKey === '16th_fc') {
-    this.isAudited = true;
+ if (selectedKey === '16th_fc') {
+    this.isAudited = 'audited';   // 👈 force audited
+  } else {
+    this.isAudited = null;        // 👈 clear so user must select
   }
 }
 
@@ -761,6 +807,8 @@ updateSelection() {
 toggleSelectAll() {
   this.filteredFiles.forEach(f => (f.selected = this.selectAll));
   this.updateSelection();
+
+   this.activeRow = null;
 }
 
 

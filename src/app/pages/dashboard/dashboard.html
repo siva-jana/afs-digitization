@@ -139,26 +139,17 @@
 </div>
 
 
-<div class="audited-radio-container" *ngIf="selectedDocType !== '16th_fc'">
+<div class="audited-radio-container">
   <label>
-    <input
-      type="radio"
-      name="auditType"
-      [value]="true"
-      [(ngModel)]="isAudited"
-    />
+    <input type="radio" name="auditStatus" [(ngModel)]="isAudited" value="audited" />
     Audited
   </label>
-  <label style="margin-left: 10px;">
-    <input
-      type="radio"
-      name="auditType"
-      [value]="false"
-      [(ngModel)]="isAudited"
-    />
-    Unaudited
+  <label>
+    <input type="radio" name="auditStatus" [(ngModel)]="isAudited" value="unAudited" />
+    UnAudited
   </label>
 </div>
+
 
 
 
@@ -182,7 +173,7 @@
 
       <div class="file-results" *ngIf="filtersApplied && filteredFiles.length > 0">
       <h3>Available Files</h3>
-     
+     <div class="table-container">
      <table class="afs-table" *ngIf="filteredFiles.length > 0">
      <thead>
       <tr>
@@ -208,7 +199,21 @@
       <th>Form Status</th>
       <th>Digitize Status</th>
       <th>Form Uploaded On</th>
-      <th>Form Digitized On</th>
+      <th>Form Digitized On
+          <div class="date-range-header">
+    <input 
+      type="date" 
+      [(ngModel)]="digitizedStartDate"
+      (change)="applyFilters()"
+    />
+    <span>to</span>
+    <input 
+      type="date" 
+      [(ngModel)]="digitizedEndDate"
+      (change)="applyFilters()"
+    />
+  </div>
+      </th>
       <th>Request ID / Log</th>
     </tr>
   </thead>
@@ -262,7 +267,7 @@
 
   <!-- Upload Button -->
   <div style="margin-top: 4px;">
-    <button class="upload-btn" (click)="setActiveRow(file); triggerFileInput(file)">
+    <button class="upload-btn" style="margin-bottom: 4px;" (click)="setActiveRow(file); triggerFileInput(file)">
       {{ file.extraFiles && file.extraFiles.length > 0 ? 'Re-upload' : 'Upload' }}
     </button>
     <input type="file"
@@ -298,7 +303,7 @@
 
   <hr class="separator" />
 
-  <!-- AFS Slot -->
+  <ng-container *ngIf="file.extraFiles && file.extraFiles.length > 0">
   <div *ngIf="hasExcelFile(file, 'AFS'); else noAfs">
     DIGITIZED
     <a *ngFor="let excel of getExcelFiles(file, 'AFS')" 
@@ -310,6 +315,7 @@
   <ng-template #noAfs>
     NOT DIGITIZED
   </ng-template>
+</ng-container>
 </td>
 
 
@@ -327,6 +333,7 @@
     </tr>
   </tbody>
 </table>
+</div>
 <div *ngIf="selectedFilesCount > 0" class="selection-summary">
   <strong>{{ totalSelectedPages }} pages</strong> from 
   <strong>{{ selectedFilesCount }} PDF file(s)</strong> selected to digitize

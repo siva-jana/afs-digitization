@@ -60,8 +60,30 @@ selectedDocType = '';
 isAudited: string | null = null;
 isLoading = false;
 
+showCalendar = false;
 digitizedStartDate: string = '';
 digitizedEndDate: string = '';
+
+toggleCalendar(): void {
+  this.showCalendar = !this.showCalendar;
+}
+
+applyDateRange(): void {
+  this.showCalendar = false;
+
+  if (this.digitizedStartDate && this.digitizedEndDate) {
+    console.log('📅 Selected range:', this.digitizedStartDate, 'to', this.digitizedEndDate);
+    this.applyFilters();
+  }
+}
+
+resetDateRange(): void {
+  this.digitizedStartDate = '';
+  this.digitizedEndDate = '';
+  this.showCalendar = false;
+  console.log('📅 Date range cleared → showing all files');
+  this.applyFilters(); // reload without date filter
+}
 
 
 
@@ -378,7 +400,7 @@ applyFilters() {
     return;
   }
   if (!this.selectedPopulation) {
-    alert("⚠️ Please select population");   // simple browser popup
+    alert("⚠️ Please select a population category");   // simple browser popup
     return;
   }
   if (!this.selectedYear) {

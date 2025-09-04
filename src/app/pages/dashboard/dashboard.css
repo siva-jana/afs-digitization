@@ -80,12 +80,12 @@
 
 /* ===== Metrics Section ===== */
 .metrics-box {
-  flex: 1;
+  flex: 1 1 100%;
   display: flex;
   flex-direction: row;
   gap: 2rem;
-  padding-left: 1100px;
   
+  justify-content: flex-end;
 }
 
 
@@ -95,6 +95,7 @@
   padding: 1.5rem;
   background-color: #fff;
     width: 420px;
+    max-width: 100%;
 }
 
 .metrics-section h3 {
@@ -151,11 +152,13 @@
 /* ===== Main Dashboard Layout ===== */
 .dashboard-wrapper {
   display: flex;
+  flex-wrap: wrap;
   gap: 2rem;
 }
 
 /* ===== Filters ===== */
 .filters {
+  flex: 1 1 250px;
   width: 380px;
   background-color: white;
   border: 1.5px solid #ccc;
@@ -213,7 +216,8 @@
 
 /* ===== Placeholder Area ===== */
 .main-content {
-  flex: 1;
+  flex: 3 1 700px;
+  overflow-x: auto;
 }
 
 .placeholder-section {
@@ -762,4 +766,139 @@ button.upload-btn:hover {
 .table tbody .date-range-header span {
   font-size: 13px;
   margin: 0 2px;
+}
+
+
+/* Container */
+.date-filter {
+  margin: 12px 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Label */
+.date-filter label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #444;
+}
+
+/* Calendar button */
+.calendar-btn {
+  padding: 0px 4px;
+  border: none;
+  background: #3377c0;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s ease-in-out, transform 0.1s ease-in-out;
+}
+.calendar-btn:hover {
+  background: #0056b3;
+  transform: translateY(-1px);
+}
+.calendar-btn:active {
+  transform: scale(0.97);
+}
+
+/* Popup */
+.calendar-popup {
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid #ccc;
+  background: #fefefe;
+  border-radius: 8px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Date inputs */
+.calendar-popup input[type="date"] {
+  padding: 6px 8px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.calendar-popup input[type="date"]:focus {
+  border-color: #007bff;
+}
+
+/* OK button */
+.calendar-popup button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s ease-in-out;
+}
+
+/* OK style */
+.calendar-popup button:first-of-type {
+  background: #28a745;
+  color: white;
+}
+.calendar-popup button:first-of-type:hover {
+  background: #1e7e34;
+}
+
+/* Reset style */
+.reset-btn {
+  background: #dc3545;
+  color: white;
+}
+.reset-btn:hover {
+  background: #a71d2a;
+}
+
+/* Selected date display */
+.date-display {
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  padding: 6px 10px;
+  background: #f1f1f1;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+
+
+@media (max-width: 1200px) {
+  .dashboard-wrapper {
+    flex-direction: column;
+  }
+
+  .filters {
+    max-width: 100%;
+  }
+
+  .metrics-grid {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 768px) {
+  .top-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .download-btn {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .afs-table th,
+  .afs-table td {
+    font-size: 12px;
+    padding: 6px;
+  }
 }

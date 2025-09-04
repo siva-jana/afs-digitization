@@ -139,7 +139,7 @@
 </div>
 
 
-<div class="audited-radio-container">
+<div class="audited-radio-container" *ngIf="selectedDocType !== '16th_fc'">
   <label>
     <input type="radio" name="auditStatus" [(ngModel)]="isAudited" value="audited" />
     Audited
@@ -149,6 +149,7 @@
     UnAudited
   </label>
 </div>
+
 
 
 
@@ -178,7 +179,7 @@
      <thead>
       <tr>
       <th>
-       SELECT TO DIGITIZE <input type="checkbox" [(ngModel)]="selectAll" (change)="toggleSelectAll()" /> ALL
+       ALL <input type="checkbox" [(ngModel)]="selectAll" (change)="toggleSelectAll()" /> 
       </th>
       <th>State</th>
       <th>City
@@ -199,21 +200,34 @@
       <th>Form Status</th>
       <th>Digitize Status</th>
       <th>Form Uploaded On</th>
-      <th>Form Digitized On
-          <div class="date-range-header">
-    <input 
-      type="date" 
-      [(ngModel)]="digitizedStartDate"
-      (change)="applyFilters()"
-    />
+      <th>
+  Form Digitized On
+  
+
+<div class="date-filter">
+ 
+  <button class="calendar-btn" (click)="toggleCalendar()">
+    📅 
+  </button>
+
+  <!-- Hidden inputs (appear only after button click) -->
+  <div *ngIf="showCalendar" class="calendar-popup">
+    <input type="date" [(ngModel)]="digitizedStartDate">
     <span>to</span>
-    <input 
-      type="date" 
-      [(ngModel)]="digitizedEndDate"
-      (change)="applyFilters()"
-    />
+    <input type="date" [(ngModel)]="digitizedEndDate">
+    <button (click)="applyDateRange()">OK</button>
+    <button class="reset-btn" (click)="resetDateRange()">Reset</button>
   </div>
-      </th>
+
+  <!-- Show chosen range -->
+  <div *ngIf="digitizedStartDate && digitizedEndDate" class="date-display">
+    {{ digitizedStartDate | date:'dd-MM-yyyy' }} to {{ digitizedEndDate | date:'dd-MM-yyyy' }}
+  </div>
+</div>
+
+
+</th>
+
       <th>Request ID / Log</th>
     </tr>
   </thead>

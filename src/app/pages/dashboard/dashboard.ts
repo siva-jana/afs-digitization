@@ -503,14 +503,16 @@ applyFilters() {
   let mergedFiles = results.flat()
     .filter((file: any) => file.fileName !== 'No data available' && file.fileName !== 'Error loading data');
 
-  // ✅ Date filter logic
-           // ✅ Date filter logic
+  const allFilteredFiles = [...mergedFiles];
+
+
+  //  Date filter logic
   if (this.digitizedStartDate && this.digitizedEndDate) {
     const start = new Date(this.digitizedStartDate);
     const end = new Date(this.digitizedEndDate);
     end.setHours(23, 59, 59, 999); // include full end day
 
-    mergedFiles = mergedFiles.filter((file: any) => {
+    const dateFiltered = mergedFiles.filter((file: any) => {
       if (!file.excelFiles?.length) return false;
 
       return file.excelFiles.some((excel: any) => {
@@ -518,6 +520,7 @@ applyFilters() {
         return uploaded >= start && uploaded <= end;
       });
     });
+    mergedFiles = dateFiltered.length > 0 ? dateFiltered : allFilteredFiles;
   }
 
   this.filteredFiles = mergedFiles;

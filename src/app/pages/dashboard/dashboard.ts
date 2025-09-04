@@ -59,6 +59,7 @@ selectedDocType = '';
 // isAudited = false;
 isAudited: string | null = null;
 isLoading = false;
+allFilteredFiles: any[] = []; // stores results from applyFilters()
 
 showCalendar = false;
 digitizedStartDate: string = '';
@@ -73,16 +74,31 @@ applyDateRange(): void {
 
   if (this.digitizedStartDate && this.digitizedEndDate) {
     console.log('📅 Selected range:', this.digitizedStartDate, 'to', this.digitizedEndDate);
-    this.applyFilters();
+
+    const start = new Date(this.digitizedStartDate);
+    const end = new Date(this.digitizedEndDate);
+    end.setHours(23, 59, 59, 999);
+
+    const dateFiltered = this.allFilteredFiles.filter(file =>
+      file.excelFiles?.some((excel: any) => {
+        const uploaded = new Date(excel.uploadedAt);
+        return uploaded >= start && uploaded <= end;
+      })
+    );
+
+    // If no match → fallback to all files
+    this.filteredFiles = dateFiltered.length > 0 ? dateFiltered : [...this.allFilteredFiles];
   }
 }
+
+
 
 resetDateRange(): void {
   this.digitizedStartDate = '';
   this.digitizedEndDate = '';
   this.showCalendar = false;
-  console.log('📅 Date range cleared → showing all files');
-  this.applyFilters(); // reload without date filter
+  console.log(' Date range cleared → showing all files');
+  this.filteredFiles = [...this.allFilteredFiles];
 }
 
 
@@ -502,27 +518,10 @@ applyFilters() {
     next: (results: any[]) => {
   let mergedFiles = results.flat()
     .filter((file: any) => file.fileName !== 'No data available' && file.fileName !== 'Error loading data');
+  this.allFilteredFiles = mergedFiles;   // backup copy
+this.filteredFiles = [...mergedFiles]; // working copy for display
 
-  const allFilteredFiles = [...mergedFiles];
-
-
-  //  Date filter logic
-  if (this.digitizedStartDate && this.digitizedEndDate) {
-    const start = new Date(this.digitizedStartDate);
-    const end = new Date(this.digitizedEndDate);
-    end.setHours(23, 59, 59, 999); // include full end day
-
-    const dateFiltered = mergedFiles.filter((file: any) => {
-      if (!file.excelFiles?.length) return false;
-
-      return file.excelFiles.some((excel: any) => {
-        const uploaded = new Date(excel.uploadedAt);
-        return uploaded >= start && uploaded <= end;
-      });
-    });
-    mergedFiles = dateFiltered.length > 0 ? dateFiltered : allFilteredFiles;
-  }
-
+  
   this.filteredFiles = mergedFiles;
 
 

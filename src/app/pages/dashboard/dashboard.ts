@@ -278,7 +278,7 @@ async handleFileUpload(event: Event, file: any) {
     return;
   }
 
-  this.isLoading = true; // 👈 start loader
+  this.isLoading = true; //  start loader
 
   try {
     // extract page count

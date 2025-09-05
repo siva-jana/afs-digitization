@@ -1,53 +1,7 @@
 <div class="dashboard-page">
+<div class="dashboard-layout">
 
-  <!-- Top Controls -->
-  <div class="top-controls">
-  <div class="metrics-box">
-  <div class="metrics-section">
-    <div class="metrics-item">
-      Files Digitized: <span class="number">{{ globalMetrics.digitizedFiles }}</span>
-    </div>
-    <div class="metrics-item">
-      Pages Digitized: <span class="number">{{ globalMetrics.digitizedPages }}</span>
-    </div>
-    <div class="metrics-item error">
-      Files Failed: <span class="number">{{ globalMetrics.failedFiles }}</span>
-    </div>
-    <div class="metrics-item error">
-      Pages Failed: <span class="number">{{ globalMetrics.failedFiles }}</span>
-    </div>
-    <div class="metrics-item success">
-      Successful Digitization: <span class="number">{{ getGlobalSuccessRate() }}%</span>
-    </div>
-  </div>
-</div>
-
-    
-    
-  <button class="download-btn" (click)="downloadExcel()">Download</button>
-    <div class="top-actions">
-      
-      <div class="profile-icon" (click)="togglePopup()">👤</div>
-    </div>
-  </div>
-
-  <!-- Profile Popup -->
-  <div class="profile-popup" *ngIf="showPopup">
-    <div class="close-btn" (click)="togglePopup()">×</div>
-    <div class="popup-content">
-      <div class="avatar-large">👤</div>
-      <div><strong>Name:</strong> {{ fullName }}</div>
-      <div><strong>Email:</strong> {{ email }}</div>
-      <div><strong>Role:</strong> {{ role }}</div>
-      <div><strong>Last Login:</strong> {{ lastLoginTime | date:'short' }}</div>
-      <button class="logout-btn" (click)="logout()">Logout</button>
-    </div>
-  </div>
-
-  <!-- Main Layout -->
-  <div class="dashboard-wrapper">
-       
-    <!-- Filters -->
+   <!-- Filters -->
     <div class="filters filters-top">
       <div class="reset-filter" (click)="resetFilters()">Reset Filter</div>
 
@@ -158,6 +112,55 @@
 
       <button class="apply-btn" (click)="applyFilters()">Apply</button>
     </div>
+       <div class="content-panel">
+  <!-- Top Controls -->
+  <div class="top-controls">
+  <div class="metrics-box">
+  <div class="metrics-section">
+    <div class="metrics-item">
+      Files Digitized: <span class="number">{{ globalMetrics.digitizedFiles }}</span>
+    </div>
+    <div class="metrics-item">
+      Pages Digitized: <span class="number">{{ globalMetrics.digitizedPages }}</span>
+    </div>
+    <div class="metrics-item error">
+      Files Failed: <span class="number">{{ globalMetrics.failedFiles }}</span>
+    </div>
+    <div class="metrics-item error">
+      Pages Failed: <span class="number">{{ globalMetrics.failedFiles }}</span>
+    </div>
+    <div class="metrics-item success">
+      Successful Digitization: <span class="number">{{ getGlobalSuccessRate() }}%</span>
+    </div>
+  </div>
+</div>
+
+    
+    
+  <button class="download-btn" (click)="downloadExcel()">Download</button>
+    <div class="top-actions">
+      
+      <div class="profile-icon" (click)="togglePopup()">👤</div>
+    </div>
+  </div>
+
+  <!-- Profile Popup -->
+  <div class="profile-popup" *ngIf="showPopup">
+    <div class="close-btn" (click)="togglePopup()">×</div>
+    <div class="popup-content">
+      <div class="avatar-large">👤</div>
+      <div><strong>Name:</strong> {{ fullName }}</div>
+      <div><strong>Email:</strong> {{ email }}</div>
+      <div><strong>Role:</strong> {{ role }}</div>
+      <div><strong>Last Login:</strong> {{ lastLoginTime | date:'short' }}</div>
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- Main Layout -->
+  <div class="table-wrapper">
+       
+   
   
     <!-- Main Content -->
     <div class="main-content">
@@ -218,40 +221,43 @@
   <div class="popup-box">
     <h3>Select Date Range</h3>
 
-    <!-- Start Date -->
-    <mat-form-field appearance="outline">
-      <mat-label>Start Date</mat-label>
-      <input matInput
-             [matDatepicker]="startPicker"
-             [(ngModel)]="digitizedStartDate"
-             [matDatepickerFilter]="disableFutureDates"
-             [max]="today"
-             placeholder="Choose start date" />
-      <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
-      <mat-datepicker #startPicker></mat-datepicker>
-    </mat-form-field>
+    <!-- Inline Date Fields -->
+    <div class="date-fields">
+      <!-- Start Date -->
+      <mat-form-field appearance="outline">
+        <mat-label>Start Date</mat-label>
+        <input matInput
+               [matDatepicker]="startPicker"
+               [(ngModel)]="digitizedStartDate"
+               [matDatepickerFilter]="disableFutureDates"
+               [max]="today"
+               placeholder="Choose start date" />
+        <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+        <mat-datepicker #startPicker></mat-datepicker>
+      </mat-form-field>
 
-    <!-- End Date -->
-    <mat-form-field appearance="outline">
-      <mat-label>End Date</mat-label>
-      <input matInput
-             [matDatepicker]="endPicker"
-             [(ngModel)]="digitizedEndDate"
-             [matDatepickerFilter]="disableFutureDates"
-             [min]="digitizedStartDate"
-             [max]="today"
-             placeholder="Choose end date" />
-      <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
-      <mat-datepicker #endPicker></mat-datepicker>
-    </mat-form-field>
+      <!-- End Date -->
+      <mat-form-field appearance="outline">
+        <mat-label>End Date</mat-label>
+        <input matInput
+               [matDatepicker]="endPicker"
+               [(ngModel)]="digitizedEndDate"
+               [matDatepickerFilter]="disableFutureDates"
+               [min]="digitizedStartDate"
+               [max]="today"
+               placeholder="Choose end date" />
+        <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+        <mat-datepicker #endPicker></mat-datepicker>
+      </mat-form-field>
+    </div>
 
     <!-- Validation error -->
     <div *ngIf="digitizedStartDate && digitizedEndDate && !isDateRangeValid()" class="error">
        Start date cannot be after End date
     </div>
 
+    <!-- Actions -->
     <div class="popup-actions">
-      <!-- Disable OK button if invalid -->
       <button class="ok-btn"
               [disabled]="!digitizedStartDate || !digitizedEndDate || !isDateRangeValid()"
               (click)="applyDateRange()">OK</button>
@@ -272,7 +278,7 @@
 
 </th>
 
-      <th>Request ID / Log</th>
+      <th  tabindex="-1">Request ID / Log</th>
     </tr>
   </thead>
    <tbody>
@@ -385,7 +391,7 @@
       <td>
          <div *ngIf="file.excelFiles && file.excelFiles.length > 0">
           <ng-container *ngFor="let excel of file.excelFiles; let i = index">
-             {{ excel.uploadedAt | date:'short' }}
+             {{ excel.uploadedAt | date:'d/M/yyyy, h:mm a' }}
             <!-- Separator between timestamps (not after the last one) -->
              <hr class="separator" *ngIf="i < file.excelFiles.length - 1" />
           </ng-container>
@@ -432,5 +438,6 @@
 </div> -->
 </div>
 </div>
-
+</div>
+</div>
 </div>

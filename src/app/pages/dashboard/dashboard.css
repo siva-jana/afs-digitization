@@ -99,7 +99,7 @@
 .metrics-item {
   flex: 1;
   text-align: center;
-  padding: 1rem;
+  padding: 0.5rem;
   font-weight: bold;
   border-right: 2px solid #000;
 }
@@ -380,8 +380,11 @@
 
 .afs-table th {
   background-color: #f0f0f0;
+   pointer-events: none; 
 }
-
+.afs-table th * {
+  pointer-events: auto;   /* re-enable clicks for child elements (like sort icons/buttons) */
+}
 hr.separator {
    display: block;
   width: 100%;
@@ -586,31 +589,61 @@ button.upload-btn:hover {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5); /* dimmed background */
+   /* dimmed background */
   display: flex;
   align-items: center;
   justify-content: center;
+  align-items: center;
   z-index: 9999; /* keep it above everything */
 }
 
-/* Popup box styling */
+/* Popup box smaller */
 .popup-box {
   background: #fff;
-  padding: 54px 380px;
-  border-radius: 12px;
-  min-width: 360px;
-  max-width: 90%;
-  text-align: center;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-  animation: fadeInScale 0.25s ease-out;
+  padding: 14px 18px;
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+  width: 380px;   /* reduced width */
+  max-width: 95%;
+  font-size: 13px;
 }
+
+/* Inline date fields */
+.date-fields {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.date-fields mat-form-field {
+  flex: 1;
+  margin: 0;
+}
+
+/* Compact Angular Material inputs */
+::ng-deep .mat-form-field-wrapper {
+  padding-bottom: 0 !important;
+}
+
+::ng-deep .mat-form-field-flex {
+  height: 38px !important;
+  font-size: 13px;
+}
+
+
+.afs-table th:focus,
+.afs-table td:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: inherit !important; /* keep original background */
+  color: inherit !important;            /* reset any forced color */
+}
+
 
 /* Heading */
 .popup-box h3 {
-  margin-bottom: 16px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #222;
+  margin: 0 0 10px;
+  font-size: 16px;
 }
 
 /* Paragraph */
@@ -618,6 +651,20 @@ button.upload-btn:hover {
   margin-bottom: 20px;
   font-size: 14px;
   color: #444;
+}
+/* Date fields */
+mat-form-field {
+  width: 100%;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+/* Actions */
+.popup-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 /* Buttons */
@@ -912,6 +959,7 @@ button.upload-btn:hover {
   .afs-table td {
     font-size: 12px;
     padding: 6px;
+    
   }
 }
 
@@ -925,4 +973,37 @@ button.upload-btn:hover {
 
 .radio-options label {
   margin-right: 20px;
+}
+
+
+.dashboard-layout {
+  display: flex;
+  align-items: flex-start;
+}
+
+/* Left filters */
+.filters-panel {
+  width: 250px;       /* fixed width */
+  margin-right: 20px; /* spacing */
+}
+
+/* Right panel (metrics + table) */
+.content-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Top row (metrics + download + profile) */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+/* Table area */
+.table-wrapper {
+  flex: 1;
+  overflow: auto;
 }

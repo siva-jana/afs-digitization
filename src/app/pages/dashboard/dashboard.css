@@ -159,24 +159,27 @@
   border: 1.5px solid #ccc;
   border-radius: 16px;
   padding: 0.8rem 1.4rem;
+  padding-bottom: 30px;
   display: flex;
   flex-direction: column;
   gap: 1.5px;
   height: 100%;       /* fixed height if you set manually */
-  min-height: 600px;
+  min-height: 500px;
 }
 
 .filters label {
   font-weight: bold;
-  margin-bottom: 4px;
-  font-size: 14px;
+  margin-bottom: 2px;
+  font-size: 13px;
+  line-height: 1.2;
 }
 
 .filters select,
 .filters input[type="checkbox"],
+.filters input[type="text"],
 .city-search-box,
 .state-search-box {
-  padding: 6px 10px;
+  padding: 4px 6px;
   font-size: 14px;
   border: 1px solid #bbb;
   border-radius: 6px;
@@ -208,7 +211,7 @@
   background-color: #007bff;
   color: white;
   font-weight: bold;
-  padding: 10px;
+  padding: 6px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -297,7 +300,13 @@
   gap: 6px;
 
 }
-
+.city-checkboxes.scroll-box {
+  max-height: 120px;   /* adjust as needed */
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  padding: 12px;
+  margin-bottom: 6px;
+}
 
 .checkbox-item {
   display: flex;
@@ -369,6 +378,7 @@
   width: 100%;
   border-collapse: collapse;
   text-align: center;
+  font-size: 12px;
 }
 
 .afs-table th, .afs-table td {
@@ -376,6 +386,7 @@
   padding: 0px;
   text-align: center;
    vertical-align: middle;
+   line-height: 1.1;
 }
 
 .afs-table th {

@@ -12,12 +12,22 @@ import { ViewChildren, ElementRef, QueryList } from '@angular/core';
 import { PDFDocument } from 'pdf-lib';
 import { HostListener } from '@angular/core';
 
-
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, HttpClientModule , FormsModule],
+  imports: [CommonModule, HttpClientModule , FormsModule,MatFormFieldModule,
+    MatInputModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatButtonModule,
+    MatIconModule],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })
@@ -31,6 +41,7 @@ export class Dashboard implements OnInit {
   
   showPopup = false;
   showMetricsPopup = false;
+  showDatePopup = false;
   //userMetrics = { digitizedFiles: 0, digitizedPages: 0, failedFiles: 0 ,updatedAt: '' };
   globalMetrics = { digitizedFiles: 0, digitizedPages: 0, failedFiles: 0 ,updatedAt: '' };
 
@@ -62,15 +73,41 @@ isLoading = false;
 allFilteredFiles: any[] = []; // stores results from applyFilters()
 
 showCalendar = false;
-digitizedStartDate: string = '';
-digitizedEndDate: string = '';
+// digitizedStartDate: string = '';
+// digitizedEndDate: string = '';
+digitizedStartDate: Date | null = null;
+digitizedEndDate: Date | null = null;
+today = new Date();
+
+
+
+
+openDatePopup() {
+  this.showDatePopup = true;
+}
+
+closeDatePopup() {
+  this.showDatePopup = false;
+}
 
 toggleCalendar(): void {
   this.showCalendar = !this.showCalendar;
 }
 
 applyDateRange(): void {
+
+    if (!this.digitizedStartDate || !this.digitizedEndDate) {
+    alert("⚠️ Please select both start and end dates");
+    return;
+  }
+
+  if (!this.isDateRangeValid()) {
+    alert("⚠️ Start date cannot be after End date");
+    return;
+  }
+
   this.showCalendar = false;
+  this.showDatePopup = false;
 
   if (this.digitizedStartDate && this.digitizedEndDate) {
     console.log('📅 Selected range:', this.digitizedStartDate, 'to', this.digitizedEndDate);
@@ -86,19 +123,33 @@ applyDateRange(): void {
       })
     );
 
-    // If no match → fallback to all files
-    this.filteredFiles = dateFiltered.length > 0 ? dateFiltered : [...this.allFilteredFiles];
+    //  keep only filtered results (no fallback)
+    this.filteredFiles = dateFiltered;
   }
 }
 
 
 
+
 resetDateRange(): void {
-  this.digitizedStartDate = '';
-  this.digitizedEndDate = '';
+  this.digitizedStartDate = null;
+  this.digitizedEndDate = null;
   this.showCalendar = false;
+   this.showDatePopup = false;
   console.log(' Date range cleared → showing all files');
   this.filteredFiles = [...this.allFilteredFiles];
+}
+
+// Disable selecting future dates
+disableFutureDates = (d: Date | null): boolean => {
+  const date = d || new Date();
+  return date <= this.today;
+};
+
+// Check if date range is valid
+isDateRangeValid(): boolean {
+  if (!this.digitizedStartDate || !this.digitizedEndDate) return true;
+  return this.digitizedStartDate <= this.digitizedEndDate;
 }
 
 

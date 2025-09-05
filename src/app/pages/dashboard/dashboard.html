@@ -2,24 +2,26 @@
 
   <!-- Top Controls -->
   <div class="top-controls">
-    <div class="metrics-box">
-      <div class="metrics-section">
-        <h3>Overall <span class="highlight">digitized</span> {{ globalMetrics.digitizedPages + globalMetrics.failedFiles }} pages in {{ globalMetrics.digitizedFiles + globalMetrics.failedFiles }} files</h3>
-        <div class="metrics-grid">
-          <div class="metrics-left">
-            <p>Files Digitized: {{ globalMetrics.digitizedFiles }}</p>
-            <p>Pages Digitized: {{ globalMetrics.digitizedPages }}</p>
-            <p>Files Failed: <span class="error-number">{{ globalMetrics.failedFiles }}</span></p>
-            <p>Pages Failed: <span class="error-number">{{ globalMetrics.failedFiles }}</span></p>
-          </div>
-          <div class="vertical-separator"></div>
-          <div class="metrics-right">
-            <div class="success-rate">{{ getGlobalSuccessRate() }}%</div>
-            <div class="success-label">Successful Digitization</div>
-          </div>
-        </div>
-      </div>
+  <div class="metrics-box">
+  <div class="metrics-section">
+    <div class="metrics-item">
+      Files Digitized: <span class="number">{{ globalMetrics.digitizedFiles }}</span>
     </div>
+    <div class="metrics-item">
+      Pages Digitized: <span class="number">{{ globalMetrics.digitizedPages }}</span>
+    </div>
+    <div class="metrics-item error">
+      Files Failed: <span class="number">{{ globalMetrics.failedFiles }}</span>
+    </div>
+    <div class="metrics-item error">
+      Pages Failed: <span class="number">{{ globalMetrics.failedFiles }}</span>
+    </div>
+    <div class="metrics-item success">
+      Successful Digitization: <span class="number">{{ getGlobalSuccessRate() }}%</span>
+    </div>
+  </div>
+</div>
+
     
     
   <button class="download-btn" (click)="downloadExcel()">Download</button>
@@ -44,9 +46,9 @@
 
   <!-- Main Layout -->
   <div class="dashboard-wrapper">
-
+       
     <!-- Filters -->
-    <div class="filters">
+    <div class="filters filters-top">
       <div class="reset-filter" (click)="resetFilters()">Reset Filter</div>
 
       <label>State</label>
@@ -139,7 +141,7 @@
 </div>
 
 
-<div class="audited-radio-container" *ngIf="selectedDocType !== '16th_fc'">
+<div class="audited-radio-container radio-options" *ngIf="selectedDocType !== '16th_fc'">
   <label>
     <input type="radio" name="auditStatus" [(ngModel)]="isAudited" value="audited" />
     Audited
@@ -156,7 +158,7 @@
 
       <button class="apply-btn" (click)="applyFilters()">Apply</button>
     </div>
-
+  
     <!-- Main Content -->
     <div class="main-content">
     <div class="placeholder-section" *ngIf="!filtersApplied">
@@ -172,10 +174,10 @@
   <p>Please wait...</p>
 </div>
 
-      <div class="file-results" *ngIf="filtersApplied && filteredFiles.length > 0">
+      <div class="file-results" *ngIf="filtersApplied">
       <h3>Available Files</h3>
      <div class="table-container">
-     <table class="afs-table" *ngIf="filteredFiles.length > 0">
+     <table class="afs-table">
      <thead>
       <tr>
       <th>
@@ -206,18 +208,60 @@
 
 <div class="date-filter">
  
-  <button class="calendar-btn" (click)="toggleCalendar()">
+  <button class="calendar-btn" (click)="openDatePopup()">
     📅 
   </button>
 
-  <!-- Hidden inputs (appear only after button click) -->
-  <div *ngIf="showCalendar" class="calendar-popup">
-    <input type="date" [(ngModel)]="digitizedStartDate">
-    <span>to</span>
-    <input type="date" [(ngModel)]="digitizedEndDate">
-    <button (click)="applyDateRange()">OK</button>
-    <button class="reset-btn" (click)="resetDateRange()">Reset</button>
+  <!-- Date Range Popup -->
+<!-- Date Range Popup -->
+<div class="popup-overlay" *ngIf="showDatePopup">
+  <div class="popup-box">
+    <h3>Select Date Range</h3>
+
+    <!-- Start Date -->
+    <mat-form-field appearance="outline">
+      <mat-label>Start Date</mat-label>
+      <input matInput
+             [matDatepicker]="startPicker"
+             [(ngModel)]="digitizedStartDate"
+             [matDatepickerFilter]="disableFutureDates"
+             [max]="today"
+             placeholder="Choose start date" />
+      <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+      <mat-datepicker #startPicker></mat-datepicker>
+    </mat-form-field>
+
+    <!-- End Date -->
+    <mat-form-field appearance="outline">
+      <mat-label>End Date</mat-label>
+      <input matInput
+             [matDatepicker]="endPicker"
+             [(ngModel)]="digitizedEndDate"
+             [matDatepickerFilter]="disableFutureDates"
+             [min]="digitizedStartDate"
+             [max]="today"
+             placeholder="Choose end date" />
+      <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+      <mat-datepicker #endPicker></mat-datepicker>
+    </mat-form-field>
+
+    <!-- Validation error -->
+    <div *ngIf="digitizedStartDate && digitizedEndDate && !isDateRangeValid()" class="error">
+       Start date cannot be after End date
+    </div>
+
+    <div class="popup-actions">
+      <!-- Disable OK button if invalid -->
+      <button class="ok-btn"
+              [disabled]="!digitizedStartDate || !digitizedEndDate || !isDateRangeValid()"
+              (click)="applyDateRange()">OK</button>
+      <button class="reset-btn" (click)="resetDateRange()">Reset</button>
+      <button class="close-btn" (click)="closeDatePopup()">Close</button>
+    </div>
   </div>
+</div>
+
+
 
   <!-- Show chosen range -->
   <div *ngIf="digitizedStartDate && digitizedEndDate" class="date-display">
@@ -232,6 +276,10 @@
     </tr>
   </thead>
    <tbody>
+      <!--  If no results, show single row -->
+      <tr *ngIf="filteredFiles.length === 0">
+        <td colspan="10" class="no-results">No results found within selected filters</td>
+      </tr>
     <tr *ngFor="let file of filteredFiles" [ngClass]="{'active-row':  activeRow === file}">
        <td>
         <input type="checkbox" [(ngModel)]="file.selected" (change)="updateSelection()" />
@@ -379,9 +427,9 @@
   </div>
 </div>
 </div>
-<div *ngIf="filtersApplied && filteredFiles.length === 0" class="no-files-msg">
+<!-- <div *ngIf="filtersApplied && filteredFiles.length === 0" class="no-files-msg">
   No files found for the selected filters.
-</div>
+</div> -->
 </div>
 </div>
 

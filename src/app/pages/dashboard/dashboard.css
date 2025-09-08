@@ -152,9 +152,10 @@
 
 /* ===== Filters ===== */
 .filters {
-  flex: 0 0 300px;
+  
+ flex: 0 0 300px;
   width: 100%;
-  max-width: 350px;
+  max-width: 350px;  
   background-color: white;
   border: 1.5px solid #ccc;
   border-radius: 16px;
@@ -162,9 +163,10 @@
   padding-bottom: 30px;
   display: flex;
   flex-direction: column;
-  gap: 1.5px;
+  gap: 8px;
   height: 100%;       /* fixed height if you set manually */
   min-height: 500px;
+  
 }
 
 .filters label {
@@ -757,7 +759,7 @@ mat-form-field {
 
 /* Limit table height to ~5 rows, enable internal scrolling */
 .table-container {
-  max-height: 1050px; /* adjust height ~5 rows */
+  max-height: 650px; /* adjust height ~5 rows */
   overflow-y: auto;
   border: 1px solid #ccc;
 }

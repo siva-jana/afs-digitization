@@ -79,6 +79,30 @@ digitizedStartDate: Date | null = null;
 digitizedEndDate: Date | null = null;
 today = new Date();
 
+showUploadedDatePopup = false;
+uploadedStartDate: string | null = null;
+uploadedEndDate: string | null = null;
+
+toggleUploadedDatePopup(event: Event) {
+  event.stopPropagation();
+  this.showUploadedDatePopup = !this.showUploadedDatePopup;
+}
+
+applyUploadedDateRange() {
+  if (!this.uploadedStartDate || !this.uploadedEndDate) return;
+
+  const start = new Date(this.uploadedStartDate);
+  const end = new Date(this.uploadedEndDate);
+  end.setHours(23, 59, 59, 999);
+
+  this.filteredFiles = this.allFilteredFiles.filter(file => {
+    if (!file.timestamp) return false;
+    const uploaded = new Date(file.timestamp);
+    return uploaded >= start && uploaded <= end;
+  });
+
+  this.showUploadedDatePopup = false; // close popup
+}
 
 
 
@@ -138,6 +162,14 @@ resetDateRange(): void {
    this.showDatePopup = false;
   console.log(' Date range cleared → showing all files');
   this.filteredFiles = [...this.allFilteredFiles];
+}
+
+resetuploadedonDateRange(): void {
+this.showUploadedDatePopup = false;
+this.uploadedStartDate = null;
+this.uploadedEndDate = null;
+
+
 }
 
 // Disable selecting future dates
@@ -617,6 +649,14 @@ resetFilters() {
   this.selectedYear = '';
   this.selectedDocType = '';
   this.isAudited = null;
+
+  this.digitizedStartDate = null;
+  this.digitizedEndDate = null;
+  this.uploadedStartDate = null;
+  this.uploadedEndDate = null;
+  // this.filteredFiles = [];
+  // this.allFilteredFiles = [];
+  this.filtersApplied = false;
 }
 
 

@@ -607,6 +607,7 @@ button.upload-btn:hover {
   align-items: center;
   justify-content: center;
   align-items: center;
+  text-align: center;
   z-index: 9999; /* keep it above everything */
 }
 
@@ -619,6 +620,8 @@ button.upload-btn:hover {
   width: 380px;   /* reduced width */
   max-width: 95%;
   font-size: 13px;
+  justify-content: center;
+  align-items: center;
 }
 
 /* Inline date fields */
@@ -675,9 +678,11 @@ mat-form-field {
 /* Actions */
 .popup-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
   margin-top: 12px;
+
 }
 
 /* Buttons */
@@ -689,6 +694,7 @@ mat-form-field {
   cursor: pointer;
   font-size: 14px;
   transition: background 0.2s ease;
+  
 }
 
 .proceed-btn {
@@ -759,7 +765,7 @@ mat-form-field {
 
 /* Limit table height to ~5 rows, enable internal scrolling */
 .table-container {
-  max-height: 650px; /* adjust height ~5 rows */
+  max-height: 620px; /* adjust height ~5 rows */
   overflow-y: auto;
   border: 1px solid #ccc;
 }
@@ -1019,4 +1025,95 @@ mat-form-field {
 .table-wrapper {
   flex: 1;
   overflow: auto;
+}
+
+
+/* Overlay */
+.uploaded-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+/* Popup content */
+.uploaded-popup-content {
+  background: #fff;
+  padding: 20px 28px;
+  border-radius: 10px;
+  width: 340px;
+  box-shadow: 0px 4px 15px rgba(0,0,0,0.25);
+  text-align: center;
+}
+
+.uploaded-popup-content h3 {
+  margin-bottom: 15px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Inputs */
+.uploaded-popup-content label {
+  display: block;
+  text-align: left;
+  margin-top: 10px;
+  font-size: 14px;
+  color: #444;
+}
+
+.uploaded-popup-content input[type="date"] {
+  width: 100%;
+  padding: 6px 8px;
+  margin-top: 4px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* Buttons container */
+.uploaded-popup-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* Buttons */
+.uploaded-popup-buttons button {
+  margin: 6px 0;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+/* Apply = green */
+.uploaded-apply-btn {
+  background: #4caf50;
+  color: white;
+}
+
+.uploaded-apply-btn:hover {
+  background: #45a049;
+}
+
+/* Cancel = red */
+.uploaded-cancel-btn {
+  background: #f44336;
+  color: white;
+}
+
+.uploaded-cancel-btn:hover {
+  background: #e53935;
 }

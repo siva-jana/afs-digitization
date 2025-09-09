@@ -204,7 +204,31 @@
 
       <th>Form Status</th>
       <th>Digitize Status</th>
-      <th>Form Uploaded On</th>
+      <th>Form Uploaded On
+        <button class="calendar-btn" (click)="toggleUploadedDatePopup($event)">📅</button>
+
+        <!-- Uploaded On Date Range Popup -->
+<!-- Uploaded On Date Range Popup -->
+<div *ngIf="showUploadedDatePopup" class="uploaded-popup-overlay">
+  <div class="uploaded-popup-content">
+    <h3>Select Uploaded Date Range</h3>
+
+    <label>Start Date:</label>
+    <input type="date" [(ngModel)]="uploadedStartDate" />
+
+    <label>End Date:</label>
+    <input type="date" [(ngModel)]="uploadedEndDate" />
+
+    <div class="uploaded-popup-buttons">
+      <button class="uploaded-apply-btn" (click)="applyUploadedDateRange()">Apply</button>
+      <button class="uploaded-cancel-btn" (click)="showUploadedDatePopup = false">Cancel</button>
+      <button class="uploaded-reset-btn" (click)="resetuploadedonDateRange()">Reset</button>
+    </div>
+  </div>
+</div>
+
+
+      </th>
       <th>
   Form Digitized On
   

@@ -978,6 +978,7 @@ mat-form-field {
   .afs-table td {
     font-size: 12px;
     padding: 6px;
+    vertical-align: middle;
     
   }
 }
@@ -1116,4 +1117,199 @@ mat-form-field {
 
 .uploaded-cancel-btn:hover {
   background: #e53935;
+}
+
+
+.file-link {
+  display: block;
+  margin: 14px 8px;        /* spacing between ULB and AFS files */
+  padding: 8px 12px;
+  border-radius: 8px;
+          /* subtle background */
+  transition: background 0.2s;
+}
+
+
+.file-link a {
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.ulb-file a {
+  color: #1565c0;              /* Material blue 800 */
+  font-size: 12px;
+}
+
+.afs-file a {
+  color: #2e7d32;               /* Material green 800 */
+  font-size: 12px;
+}
+
+.page-count {
+  font-size: 12px;
+  color: #777;
+  margin-top: 2px;
+}
+
+
+.file-link {
+  display: block;
+  gap :10px;        /* spacing between ULB and AFS files */
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #f9f9f9;         /* subtle background */
+ 
+}
+
+
+
+.ulb-file a {
+  color: #1565c0;              /* Material blue 800 */
+  font-size: 12px;
+  
+}
+
+.afs-file a {
+  color: #2e7d32;               /* Material green 800 */
+  font-size: 12px;
+
+}
+
+.page-count {
+  font-size: 12px;
+  color: #777;
+  margin-top: 2px;
+}
+
+.spacing-down {
+ 
+  margin-top: 15px;
+}
+.spacing-up {
+ 
+  margin-bottom: 75px;
+}
+.spacing-up1 {
+ 
+  margin-bottom: 90px;
+}
+
+.spacingup-2 {
+ 
+  margin : 20 px;
+}
+
+
+.digitize-status-wrapper {
+  margin-left: 10px;
+  display: flex;
+  flex-direction: column;  /* stack vertically */
+  gap: 65px; 
+  margin-bottom: 45px;               /* spacing between ULB and AFS blocks */
+}
+
+.digitize-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 14px;
+  
+}
+
+.ulb-block {
+  font-size: 12px;
+  color: #1565c0; /* blue for ULB */
+}
+
+.afs-block {
+  font-size: 12px;
+  color: #2e7d32; /* green for AFS */
+}
+
+.digitize-block a {
+  margin-left: 4px;
+  color: inherit;
+  text-decoration: underline;
+}
+
+.timestamp-wrapper {
+  margin-bottom: 55px;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column; /* stack timestamps vertically */
+  gap: 40px;                /* space between timestamps */
+}
+
+.timestamp-block {
+  font-size: 13px;
+  color: #333;
+  background: #f7f7f7;     /* subtle background to separate visually */
+  padding: 4px 6px;
+  border-radius: 6px;
+  width: fit-content;      /* shrink to content */
+}
+
+.timestamp-block:nth-child(2) {
+  color: #2e7d32; /* Material Green 800 */
+
+}
+
+.ulb-file {
+  margin-bottom: 40px; /* space after the ULB file section */
+  font-size: 12px;
+}
+
+.afs-files {
+  margin-top: 10px;    /* optional small space before AFS section */
+}
+
+.file-link a {
+  color: green; /* keep your AFS links green */
+  display: inline-block;
+  margin-bottom: 4px;
+}
+
+.content-wrapper1 {
+  margin-top: 20px;
+
+}
+
+.popup-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup-box {
+  background: #fff;
+  padding: 20px;
+  width: 400px;
+  max-height: 300px;
+  overflow-y: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+
+
+.single-block {
+  justify-content: center;
+  text-align: center;
+}
+
+
+.timestamp-wrapper,
+.digitize-status-wrapper.single-block {
+  
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}
+
+.timestamp-block {
+  margin: 0 4px;
 }

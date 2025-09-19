@@ -19,6 +19,8 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 
+import { NgIf } from '@angular/common';
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -27,7 +29,8 @@ import { MatIconModule } from '@angular/material/icon';
     MatDatepickerModule,
     MatNativeDateModule,
     MatButtonModule,
-    MatIconModule],
+    MatIconModule,
+  [NgIf]],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })
@@ -199,6 +202,13 @@ handleClickOutside(event: Event) {
 
 
 ngOnInit(): void {
+  const token = localStorage.getItem('token');
+  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+
+  if (!token || !isLoggedIn) {
+    this.router.navigate(['/login']);
+    return;
+  }
   this.getAFSMetrics();
   this.loadFilters(); 
   
@@ -248,6 +258,8 @@ filteredFiles: {
   fileName: string;
   fileUrl: string;
   statusText?: string;
+  ulbSubmit?: string;
+    uploadedAt?: string;
    localFile?: File;
   previewUrl?: string;
   pageCount?: number;
@@ -556,6 +568,7 @@ applyFilters() {
           : [];
 
         const statusText = status?.data?.statusText || 'No Status';
+        const ulbSubmit = status?.data?.ulbSubmit || null;
 
         if (!matchedPdfs || matchedPdfs.length === 0) {
           return [{
@@ -566,6 +579,7 @@ applyFilters() {
             fileName: 'No data available',
             fileUrl: '',
             statusText,
+            ulbSubmit,
             excelFiles: excel?.fileGroup?.files || []
           }];
         }
@@ -579,6 +593,7 @@ applyFilters() {
           fileUrl: file.url,
           timestamp: files.timestamp,
           statusText,
+          ulbSubmit,
           extraFiles: [] as any[],
           excelFiles: excel?.fileGroup?.files || []
         }));
@@ -587,8 +602,10 @@ applyFilters() {
           rows.forEach((r: any) => {
             r.extraFiles.push({
               fileName: this.updateFileName(afs.file.docType || 'afs.pdf', 'AFS_UPLOADED'),
-              fileUrl: afs.file.fileUrl
+              fileUrl: afs.file.fileUrl,
+               uploadedAt: afs.file.uploadedAt
             });
+            r.uploadedAt = afs.file.uploadedAt; 
           });
         }
 
@@ -950,5 +967,38 @@ proceedDigitization() {
   }, 500);
 }
 
+
+
+// For storing logs
+logs: string[] = [];
+showLogsBox = false;
+selectedUlbId: string | null = null;
+
+// Fetch logs API
+viewLogs(ulbId: string) {
+  this.selectedUlbId = ulbId;
+
+  this.http.get<{ success: boolean; data: string[] }>(`{{url}}afs-digitization/view-logs/${ulbId}`)
+    .subscribe({
+      next: (res) => {
+        this.logs = res?.success ? res.data : [];
+        this.showLogsBox = true;
+      },
+      error: () => {
+        this.logs = [];
+        this.showLogsBox = true;
+      }
+    });
 }
+
+// Close logs popup
+closeLogs() {
+  this.showLogsBox = false;
+  this.logs = [];
+  this.selectedUlbId = null;
+}
+
+
+}
+
 

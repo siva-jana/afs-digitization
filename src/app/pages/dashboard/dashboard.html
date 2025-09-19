@@ -320,13 +320,16 @@
       <td>{{ file.ulbCode }}</td>
 
 <td>
+  <div class="content-wrapper1">
   <!-- Main Ledger file -->
+   <div class="ulb-file">
   <ng-container *ngIf="file.previewUrl; else useBackendFile">
     <a [href]="file.previewUrl" target="_blank" (click)="setActiveRow(file); $event.stopPropagation()" >{{ file.fileName }}</a>
     <div class="page-count" *ngIf="file.pageCount !== undefined">
       ({{ file.pageCount }} pages)
     </div>
   </ng-container>
+  
 
   <ng-template #useBackendFile>
     <ng-container *ngIf="file.fileUrl; else noFileAvailable">
@@ -343,22 +346,22 @@
       </div>
     </ng-template>
   </ng-template>
-
+  </div>
   <!-- Separator -->
-  <hr class="separator" style="margin-top: 44px;" />
+  <!-- <hr class="separator" style="margin-top: 44px;" /> -->
 
   <!-- AFS Extra Files -->
-  <ng-container *ngIf="file.extraFiles && file.extraFiles.length > 0">
-    <div *ngFor="let ef of file.extraFiles" style="margin-top: 4px;">
+  <div class="afs-files"  *ngIf="file.extraFiles && file.extraFiles.length > 0">
+    <div *ngFor="let ef of file.extraFiles" class="file-link afs-file">
       <a [href]="ef.fileUrl" target="_blank" (click)="setActiveRow(file); $event.stopPropagation()">{{ ef.fileName }}</a>
       <div class="page-count" *ngIf="ef.pageCount !== undefined">
         ({{ ef.pageCount }} pages)
       </div>
     </div>
-  </ng-container>
+  </div>
 
   <!-- Upload Button -->
-  <div style="margin-top: 4px;">
+  <div style="margin-top: -14px;">
     <button class="upload-btn" style="margin-bottom: 4px;" (click)="setActiveRow(file); triggerFileInput(file)">
       {{ file.extraFiles && file.extraFiles.length > 0 ? 'Re-upload' : 'Upload' }}
     </button>
@@ -369,17 +372,24 @@
            #fileInput
            [attr.data-id]="file.cityName + file.ulbCode" />
   </div>
+  </div>
 </td>
 
 
 
      <td>
+       <div class="digitize-status-wrapper">
+      <div class="digitize-block ulb-block">
       {{ file.statusText }}
-      <hr class="separator" style="margin-bottom: 42px;" />
-
+      <!-- <hr class="separator" style="margin-bottom: 42px;" /> -->
+   </div>
+   <div class="digitize-block afs-block" *ngIf="file.extraFiles && file.extraFiles.length > 0">N/A</div>
+   </div>
      </td>
       <!-- <td></td> -->
 <td>
+   <div class="digitize-status-wrapper">
+  <div class="digitize-block ulb-block">
   <!-- ULB Slot -->
   <div *ngIf="hasExcelFile(file, 'ULB'); else noUlb">
     DIGITIZED
@@ -392,10 +402,10 @@
   <ng-template #noUlb>
     NOT DIGITIZED
   </ng-template>
-
-  <hr class="separator" />
-
-  <ng-container *ngIf="file.extraFiles && file.extraFiles.length > 0">
+</div>
+  <!-- <hr class="separator" /> -->
+  <div class="spacingup-2">
+  <div class="digitize-block afs-block" *ngIf="file.extraFiles && file.extraFiles.length > 0">
   <div *ngIf="hasExcelFile(file, 'AFS'); else noAfs">
     DIGITIZED
     <a *ngFor="let excel of getExcelFiles(file, 'AFS')" 
@@ -407,21 +417,57 @@
   <ng-template #noAfs>
     NOT DIGITIZED
   </ng-template>
-</ng-container>
+</div>
+</div>
+</div>
 </td>
 
 
-      <td><hr class="separator" /></td>
-      <td>
-         <div *ngIf="file.excelFiles && file.excelFiles.length > 0">
-          <ng-container *ngFor="let excel of file.excelFiles; let i = index">
-             {{ excel.uploadedAt | date:'d/M/yyyy, h:mm a' }}
-            <!-- Separator between timestamps (not after the last one) -->
-             <hr class="separator" *ngIf="i < file.excelFiles.length - 1" />
-          </ng-container>
+<td>
+  <div class="digitize-status-wrapper" style="margin-top: 20px; margin-right: 12px;"
+       [ngClass]="{'single-block': !file.uploadedAt}">
+    <div class="digitize-block ulb-block" *ngIf="file.ulbSubmit">
+      {{ file.ulbSubmit | date:'short' }}
+    </div>
+    <div class="digitize-block ulb-block" *ngIf="!file.ulbSubmit">
+      Not Submitted
+    </div>
+
+    <div class="digitize-block afs-block" *ngIf="file.uploadedAt">
+      {{ file.uploadedAt | date:'short' }}
+    </div>
+  </div>
+</td>
+
+      
+      
+<td>
+  <div class="timestamp-wrapper" style="margin-top: 20px; margin-right: 15px;" *ngIf="file.excelFiles && file.excelFiles.length > 0; else noFiles">
+    <div class="timestamp-block" *ngFor="let excel of file.excelFiles">
+      <span>
+        {{ excel && excel.uploadedAt ? (excel.uploadedAt | date:'d/M/yyyy, h:mm a') : 'N/A' }}
+      </span>
+    </div>
+  </div>
+
+  <ng-template #noFiles>
+    <div class="digitize-status-wrapper single-block" style="margin-top: 30px;">
+      <div class="digitize-block ulb-block">N/A</div>
+    </div>
+  </ng-template>
+</td>
+
+
+
+
+  <td>
+     <div class="digitize-status-wrapper">
+        <div 
+           class="digitize-block ulb-block"> <a href="javascript:void(0)" (click)="viewLogs(file['ulbId'])"> View Logs</a>
         </div>
-      </td>
-      <td><hr class="separator" /></td>
+        
+      </div>
+  </td>
     </tr>
   </tbody>
 </table>
@@ -464,4 +510,6 @@
 </div>
 </div>
 </div>
+
+
 </div>

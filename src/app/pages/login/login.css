@@ -1,40 +1,74 @@
+/* Full-screen background */
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #4b6cb7, #182848);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Card container */
 .login-container {
+  background: #fff;
+  padding: 40px 30px;
+  border-radius: 15px;
   width: 100%;
   max-width: 400px;
-  margin: 100px auto;
-  padding: 30px;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  background: #fff;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.6s ease;
 }
 
 h2 {
-  text-align: center;
-  margin-bottom: 25px;
+  font-weight: 600;
   color: #333;
 }
 
-.form-group {
-  margin-bottom: 20px;
+/* Input styles */
+.form-control {
+  border-radius: 8px;
+  padding: 10px 14px;
+  border: 1px solid #ccc;
+  transition: border-color 0.3s;
 }
 
-input.form-control {
-  width: 100%;
+.form-control:focus {
+  border-color: #4b6cb7;
+  box-shadow: 0 0 0 0.2rem rgba(75, 108, 183, 0.25);
+}
+
+.is-invalid {
+  border-color: #dc3545;
+}
+
+/* Toggle button on password field */
+.position-relative {
+  position: relative;
+}
+
+.toggle-btn {
+  position: absolute;
+  top: 38px;
+  right: 10px;
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  color: #777;
+}
+
+.toggle-btn:hover {
+  color: #333;
+}
+
+button[type="submit"] {
+  border-radius: 8px;
   padding: 10px;
-  font-size: 14px;
+  font-weight: 600;
 }
 
-.error {
-  color: red;
-  font-size: 12px;
-}
-
-.btn-block {
-  width: 100%;
-  padding: 10px;
-}
-
-.alert-danger {
-  margin-top: 10px;
+/* Smooth fade-in */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px);}
+  to { opacity: 1; transform: translateY(0);}
 }

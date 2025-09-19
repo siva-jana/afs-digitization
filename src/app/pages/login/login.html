@@ -1,42 +1,62 @@
-<div class="login-container">
-  <h2> AFS Login</h2>
+<div class="login-page">
+  <div class="login-container">
+    <h2 class="text-center mb-4">AFS Login</h2>
 
-  <form (ngSubmit)="login()" #loginForm="ngForm" novalidate>
-    <div class="form-group">
-      <label for="username">Username</label>
-      <input
-        id="username"
-        class="form-control"
-        [(ngModel)]="username"
-        name="username"
-        required
-      
-        #uname="ngModel"
-        placeholder="Enter your username"
-      />
+    <form (ngSubmit)="login()" #loginForm="ngForm" novalidate>
+      <!-- Username (Email) -->
+      <div class="form-group mb-3">
+        <label for="username">Username (Email)</label>
+        <input
+          id="username"
+          type="email"
+          class="form-control"
+          [(ngModel)]="username"
+          name="username"
+          required
+          #uname="ngModel"
+          placeholder="Enter your email"
+          [class.is-invalid]="uname.invalid && uname.touched"
+        />
+        <div class="invalid-feedback" *ngIf="uname.invalid && uname.touched">
+          Email is required.
+        </div>
+      </div>
 
-    </div>
+      <!-- Password with toggle -->
+      <div class="form-group mb-3 position-relative">
+        <label for="password">Password</label>
+        <input
+          id="password"
+          [type]="showPassword ? 'text' : 'password'"
+          class="form-control"
+          [(ngModel)]="password"
+          name="password"
+          required
+          #pwd="ngModel"
+          placeholder="Enter your password"
+          [class.is-invalid]="pwd.invalid && pwd.touched"
+        />
+        <button type="button" class="toggle-btn" (click)="showPassword = !showPassword">
+          <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+        </button>
+        <div class="invalid-feedback" *ngIf="pwd.invalid && pwd.touched">
+          Password is required.
+        </div>
+      </div>
 
-    <div class="form-group">
-      <label for="password">Password</label>
-      <input
-        id="password"
-        type="password"
-        class="form-control"
-        [(ngModel)]="password"
-        name="password"
-        required
-    
-        #pwd="ngModel"
-        placeholder="Enter your password"
-      />
-  
-    </div>
+      <!-- Error Message -->
+      <div *ngIf="error" class="alert alert-danger mt-2">
+        {{ error }}
+      </div>
 
-    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
-
-    <button [disabled]="loginForm.invalid || loading" type="submit" class="btn btn-primary btn-block">
-      {{ loading ? 'Logging in...' : 'Login' }}
-    </button>
-  </form>
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        class="btn btn-primary btn-block w-100 mt-3"
+        [disabled]="loginForm.invalid || loading"
+      >
+        {{ loading ? 'Logging in...' : 'Login' }}
+      </button>
+    </form>
+  </div>
 </div>

@@ -973,93 +973,207 @@ export class Dashboard implements OnInit {
   }
 
 
-    async proceedDigitization() {
-      if (this.selectedFilesCount === 0) return;
+  async proceedDigitization() {
+    if (this.selectedFilesCount === 0) return;
 
-      this.digitizeStatus = 'processing';
+    this.digitizeStatus = 'processing';
 
-      for (const fileRow of this.filteredFiles.filter(f => f.selected)) {
-        try {
-          const excelLinks: string[] = [];
+    for (const fileRow of this.filteredFiles.filter(f => f.selected)) {
+      try {
+        const excelLinks: any[] = [];
 
-          // loop over ULB + AFS pdfs if exist
-          const pdfFiles = [fileRow, ...(fileRow.extraFiles || [])];
+        // loop over ULB + AFS pdfs if exist
+        const pdfFiles = [fileRow, ...(fileRow.extraFiles || [])];
 
-          for (const pdf of pdfFiles) {
-            if (!pdf.fileUrl && !pdf.previewUrl && !pdf.originalFile) continue;
+        for (const pdf of pdfFiles) {
+          if (!pdf.fileUrl && !pdf.previewUrl && !pdf.originalFile) continue;
 
-            const formData = new FormData();
+          const formData = new FormData();
 
-            if (pdf.originalFile) {
-              // Case 1: user uploaded, you already have a File
-              formData.append("file", pdf.originalFile, pdf.originalFile.name);
-            } else {
-              // Case 2: only have a URL → fetch as blob and give filename
-              const blob = await this.fetchPdfAsBlob(pdf.fileUrl || pdf.previewUrl || '');
-              formData.append("file", blob, "document.pdf");
-            }
-            const docTypeName =
-          this.filters.documentTypes
-            .flatMap(group => group.items)
-            .find(doc => doc.key === this.selectedDocType)?.name || '';
-            formData.append("Document_type_ID", fileRow.docType || "bal_sheet");
-
-            const digitizeResp: any = await this.http.post(
-              "http://3.109.105.81/AFS_Digitization",
-              formData
-            ).toPromise();
-
-            if (digitizeResp?.S3_Excel_Storage_Link) {
-              excelLinks.push(digitizeResp.S3_Excel_Storage_Link);
-            }
+          if (pdf.originalFile) {
+            // Case 1: user uploaded, you already have a File
+            formData.append("file", pdf.originalFile, pdf.originalFile.name);
+          } else {
+            // Case 2: only have a URL → fetch as blob and give filename
+            const blob = await this.fetchPdfAsBlob(pdf.fileUrl || pdf.previewUrl || '');
+            formData.append("file", blob, "document.pdf");
           }
 
+          const docTypeName =
+            this.filters.documentTypes
+              .flatMap(group => group.items)
+              .find(doc => doc.key === this.selectedDocType)?.name || '';
 
-          // Now upload collected excel links to your backend
-          if (excelLinks.length > 0) {
-            console.log("Excel links found:", excelLinks);
-            const backendForm = new FormData();
-            backendForm.append('ulbId', fileRow['ulbId']);
-            backendForm.append('financialYear', this.selectedYear);
-            backendForm.append('auditType', this.isAudited ?? '');
-             const docTypeName =
-          this.filters.documentTypes
-            .flatMap(group => group.items)
-            .find(doc => doc.key === this.selectedDocType)?.name || '';
-        backendForm.append('docType', docTypeName);
-  for (let i = 0; i < excelLinks.length; i++) {
-    backendForm.append('excelLinks', excelLinks[i]);
+          formData.append("Document_type_ID", fileRow.docType || "bal_sheet");
+
+          const digitizeResp: any = await this.http.post(
+            "http://3.109.105.81/AFS_Digitization",
+            formData
+          ).toPromise();
+          if (digitizeResp?.message) {
+            alert(digitizeResp.message);
+          }
+
+          if (digitizeResp?.S3_Excel_Storage_Link) {
+            //  Push object instead of raw string
+            excelLinks.push({
+              url: digitizeResp.S3_Excel_Storage_Link,
+              requestId: digitizeResp.request_id
+            });
+          }
+        }
+
+        // Now upload collected excel links to your backend
+        if (excelLinks.length > 0) {
+          console.log("Excel links found:", excelLinks);
+          const backendForm = new FormData();
+          backendForm.append('ulbId', fileRow['ulbId']);
+          backendForm.append('financialYear', this.selectedYear);
+          backendForm.append('auditType', this.isAudited ?? '');
+
+          const docTypeName =
+            this.filters.documentTypes
+              .flatMap(group => group.items)
+              .find(doc => doc.key === this.selectedDocType)?.name || '';
+
+          backendForm.append('docType', docTypeName);
+
+          //  stringify each link before appending
+          for (let i = 0; i < excelLinks.length; i++) {
+            backendForm.append('excelLinks', JSON.stringify(excelLinks[i]));
+          }
+
+          console.log("Ready to hit backend API...");
+          console.log("Uploading to backend with formData:", {
+            ulbId: fileRow['ulbId'],
+            financialYear: this.selectedYear,
+            auditType: this.isAudited,
+            docType: docTypeName,
+            excelFiles: excelLinks
+          });
+
+          try {
+            const resp = await this.http.post(
+              'http://localhost:8080/api/v1/afs-digitization/afs-excel-file',
+              backendForm
+            ).toPromise();
+            console.log("Backend upload response:", resp);
+          } catch (e) {
+            console.error("Backend upload failed:", e);
+          }
+        }
+
+        console.log('Row processed successfully:', fileRow['ulbId']);
+
+      } catch (err) {
+        console.error('Error digitizing row', fileRow['ulbId'], err);
+      }
+    }
+
+    this.digitizeStatus = 'done';
+    if (this.digitizeStatus === 'done') {
+      this.applyFilters();
+    }
   }
 
-            console.log("Ready to hit backend API...");
-            console.log("Uploading to backend with formData:", {
-              ulbId: fileRow['ulbId'],
-              financialYear: fileRow['financialYear'],
-              auditType: this.isAudited,
-              docType: fileRow['docType'],
-              excelFiles: excelLinks
-            });
 
-            try {
-              const resp = await this.http.post(
-                'http://localhost:8080/api/v1/afs-digitization/afs-excel-file',
-                backendForm
-              ).toPromise();
-              console.log("Backend upload response:", resp);
-            } catch (e) {
-              console.error("Backend upload failed:", e);
-            }
-          }
+  // async proceedDigitization() {
+  //   if (this.selectedFilesCount === 0) return;
 
-          console.log('Row processed successfully:', fileRow['ulbId']);
+  //   this.digitizeStatus = 'processing';
 
-        } catch (err) {
-          console.error('Error digitizing row', fileRow['ulbId'], err);
-        }
-      }
+  //   for (const fileRow of this.filteredFiles.filter(f => f.selected)) {
+  //     try {
+  //       const excelLinks: string[] = [];
 
-      this.digitizeStatus = 'done';
-    }
+  //       // loop over ULB + AFS pdfs if exist
+  //       const pdfFiles = [fileRow, ...(fileRow.extraFiles || [])];
+
+  //       for (const pdf of pdfFiles) {
+  //         if (!pdf.fileUrl && !pdf.previewUrl && !pdf.originalFile) continue;
+
+  //         const formData = new FormData();
+
+  //         if (pdf.originalFile) {
+  //           // Case 1: user uploaded, you already have a File
+  //           formData.append("file", pdf.originalFile, pdf.originalFile.name);
+  //         } else {
+  //           // Case 2: only have a URL → fetch as blob and give filename
+  //           const blob = await this.fetchPdfAsBlob(pdf.fileUrl || pdf.previewUrl || '');
+  //           formData.append("file", blob, "document.pdf");
+  //         }
+  //         const docTypeName =
+  //           this.filters.documentTypes
+  //             .flatMap(group => group.items)
+  //             .find(doc => doc.key === this.selectedDocType)?.name || '';
+  //         formData.append("Document_type_ID", fileRow.docType || "bal_sheet");
+
+  //         const digitizeResp: any = await this.http.post(
+  //           "http://3.109.105.81/AFS_Digitization",
+  //           formData
+  //         ).toPromise();
+
+  //         // if (digitizeResp?.S3_Excel_Storage_Link) {
+  //         //   excelLinks.push(digitizeResp.S3_Excel_Storage_Link);
+  //         // }
+  //         if (digitizeResp?.S3_Excel_Storage_Link) {
+  //           excelLinks.push(JSON.stringify({
+  //             url: digitizeResp.S3_Excel_Storage_Link,
+  //             requestId: digitizeResp.request_id   // adds request_id here
+  //           }));
+  //         }
+
+  //       }
+
+
+  //       // Now upload collected excel links to your backend
+  //       if (excelLinks.length > 0) {
+  //         console.log("Excel links found:", excelLinks);
+  //         const backendForm = new FormData();
+  //         backendForm.append('ulbId', fileRow['ulbId']);
+  //         backendForm.append('financialYear', this.selectedYear);
+  //         backendForm.append('auditType', this.isAudited ?? '');
+  //         const docTypeName =
+  //           this.filters.documentTypes
+  //             .flatMap(group => group.items)
+  //             .find(doc => doc.key === this.selectedDocType)?.name || '';
+  //         backendForm.append('docType', docTypeName);
+  //         for (let i = 0; i < excelLinks.length; i++) {
+  //           backendForm.append('excelLinks', excelLinks[i]);
+  //         }
+
+  //         console.log("Ready to hit backend API...");
+  //         console.log("Uploading to backend with formData:", {
+  //           ulbId: fileRow['ulbId'],
+  //           financialYear: fileRow['financialYear'],
+  //           auditType: this.isAudited,
+  //           docType: fileRow['docType'],
+  //           excelFiles: excelLinks
+  //         });
+
+  //         try {
+  //           const resp = await this.http.post(
+  //             'http://localhost:8080/api/v1/afs-digitization/afs-excel-file',
+  //             backendForm
+  //           ).toPromise();
+  //           console.log("Backend upload response:", resp);
+  //         } catch (e) {
+  //           console.error("Backend upload failed:", e);
+  //         }
+  //       }
+
+  //       console.log('Row processed successfully:', fileRow['ulbId']);
+
+  //     } catch (err) {
+  //       console.error('Error digitizing row', fileRow['ulbId'], err);
+  //     }
+  //   }
+
+  //   this.digitizeStatus = 'done';
+  //   if (this.digitizeStatus === 'done') {
+  //     this.applyFilters();
+  //   }
+  // }
 
 
 

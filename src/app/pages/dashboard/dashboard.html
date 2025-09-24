@@ -1,7 +1,7 @@
 <div class="dashboard-page">
-<div class="dashboard-layout">
+  <div class="dashboard-layout">
 
-   <!-- Filters -->
+    <!-- Filters -->
     <div class="filters filters-top">
       <div class="reset-filter" (click)="resetFilters()">Reset Filter</div>
 
@@ -20,12 +20,12 @@
 
       <label>Population Category</label>
       <select [(ngModel)]="selectedPopulation" (change)="onPopulationOrStateChange()">
-         <option value="">Select population category</option>
+        <option value="">Select population category</option>
         <option *ngFor="let p of filters.populationCategories" [value]="p">{{ p }}</option>
       </select>
 
-     
-     
+
+
       <!-- <div class="custom-multiselect">
        <label class="filter-label">City</label>
       <input type="text" [(ngModel)]="citySearchText" placeholder="Search city..." class="city-search-box" />
@@ -40,14 +40,9 @@
       </div> -->
 
       <label class="filter-label">City</label>
-<input
-  type="text"
-  [(ngModel)]="citySearchText"
-  placeholder="Search city..."
-  class="city-search-box"
-/>
+      <input type="text" [(ngModel)]="citySearchText" placeholder="Search city..." class="city-search-box" />
 
-<!-- <div class="city-checkboxes scroll-box">
+      <!-- <div class="city-checkboxes scroll-box">
   <label *ngFor="let c of filteredCities" class="checkbox-item">
     <input
       type="checkbox"
@@ -58,21 +53,17 @@
     {{ c.name }}
   </label>
 </div> -->
-<div *ngIf="selectedState && selectedPopulation">
-<div class="city-checkboxes scroll-box">
-  <label *ngFor="let c of filteredCities" class="checkbox-item">
-    <input
-      type="checkbox"
-      [value]="c.name"
-      [checked]="selectedCities.includes(c.name)"
-      (change)="toggleCitySelection(c.name, $any($event.target).checked)"
-    />
-    <span>{{ c.name }}</span>
-  </label>
-</div>
-</div>
+      <div *ngIf="selectedState && selectedPopulation">
+        <div class="city-checkboxes scroll-box">
+          <label *ngFor="let c of filteredCities" class="checkbox-item">
+            <input type="checkbox" [value]="c.name" [checked]="selectedCities.includes(c.name)"
+              (change)="toggleCitySelection(c.name, $any($event.target).checked)" />
+            <span>{{ c.name }}</span>
+          </label>
+        </div>
+      </div>
 
-      
+
 
       <label>Year</label>
       <select [(ngModel)]="selectedYear">
@@ -80,31 +71,32 @@
         <option *ngFor="let y of filters.years" [value]="y.name">{{ y.name }}</option>
       </select>
 
-      
-<label>Document Type</label>
-<div class="grouped-dropdown">
-  <div *ngFor="let group of filters.documentTypes">
-    <div class="group-heading">{{ group.heading }}</div>
-    <div *ngFor="let d of group.items" class="group-option">
-      <label>
-        <input type="radio" name="docType" [value]="d.key" [(ngModel)]="selectedDocType" (ngModelChange)="onDocTypeChange($event)"/>
-         {{ d.name }}
-      </label>
-    </div>
-  </div>
-</div>
+
+      <label>Document Type</label>
+      <div class="grouped-dropdown">
+        <div *ngFor="let group of filters.documentTypes">
+          <div class="group-heading">{{ group.heading }}</div>
+          <div *ngFor="let d of group.items" class="group-option">
+            <label>
+              <input type="radio" name="docType" [value]="d.key" [(ngModel)]="selectedDocType"
+                (ngModelChange)="onDocTypeChange($event)" />
+              {{ d.name }}
+            </label>
+          </div>
+        </div>
+      </div>
 
 
-<div class="audited-radio-container radio-options" *ngIf="selectedDocType !== '16th_fc'">
-  <label>
-    <input type="radio" name="auditStatus" [(ngModel)]="isAudited" value="audited" />
-    Audited
-  </label>
-  <label>
-    <input type="radio" name="auditStatus" [(ngModel)]="isAudited" value="unAudited" />
-    UnAudited
-  </label>
-</div>
+      <div class="audited-radio-container radio-options" *ngIf="selectedDocType !== '16th_fc'">
+        <label>
+          <input type="radio" name="auditStatus" [(ngModel)]="isAudited" value="audited" />
+          Audited
+        </label>
+        <label>
+          <input type="radio" name="auditStatus" [(ngModel)]="isAudited" value="unAudited" />
+          UnAudited
+        </label>
+      </div>
 
 
 
@@ -112,404 +104,403 @@
 
       <button class="apply-btn" (click)="applyFilters()">Apply</button>
     </div>
-       <div class="content-panel">
-  <!-- Top Controls -->
-  <div class="top-controls">
-  <div class="metrics-box">
-  <div class="metrics-section">
-    <div class="metrics-item">
-      Files Digitized: <span class="number">{{ globalMetrics.digitizedFiles }}</span>
-    </div>
-    <div class="metrics-item">
-      Pages Digitized: <span class="number">{{ globalMetrics.digitizedPages }}</span>
-    </div>
-    <div class="metrics-item error">
-      Files Failed: <span class="number">{{ globalMetrics.failedFiles }}</span>
-    </div>
-    <div class="metrics-item error">
-      Pages Failed: <span class="number">{{ globalMetrics.failedFiles }}</span>
-    </div>
-    <div class="metrics-item success">
-      Successful Digitization: <span class="number">{{ getGlobalSuccessRate() }}%</span>
-    </div>
-  </div>
-</div>
-
-    
-    
-  <button class="download-btn" (click)="downloadExcel()">Download</button>
-    <div class="top-actions">
-      
-      <div class="profile-icon" (click)="togglePopup()">👤</div>
-    </div>
-  </div>
-
-  <!-- Profile Popup -->
-  <div class="profile-popup" *ngIf="showPopup">
-    <div class="close-btn" (click)="togglePopup()">×</div>
-    <div class="popup-content">
-      <div class="avatar-large">👤</div>
-      <div><strong>Name:</strong> {{ fullName }}</div>
-      <div><strong>Email:</strong> {{ email }}</div>
-      <div><strong>Role:</strong> {{ role }}</div>
-      <div><strong>Last Login:</strong> {{ lastLoginTime | date:'short' }}</div>
-      <button class="logout-btn" (click)="logout()">Logout</button>
-    </div>
-  </div>
-
-  <!-- Main Layout -->
-  <div class="table-wrapper">
-       
-   
-  
-    <!-- Main Content -->
-    <div class="main-content">
-    <div class="placeholder-section" *ngIf="!filtersApplied">
-      <div><h4>select filters on the left pane to see the files</h4></div>
-      </div>
-      <div *ngIf="isLoading" class="loader-overlay">
-  <div class="spinner"></div>
-  <p>Loading data...</p>
-</div>
-<!-- Loader -->
-<div *ngIf="isLoading" class="loader-overlay">
-  <div class="spinner"></div>
-  <p>Please wait...</p>
-</div>
-
-      <div class="file-results" *ngIf="filtersApplied">
-      <h3>Available Files</h3>
-     <div class="table-container">
-     <table class="afs-table">
-     <thead>
-      <tr>
-      <th>
-       ALL <input type="checkbox" [(ngModel)]="selectAll" (change)="toggleSelectAll()" /> 
-      </th>
-      <th>State</th>
-      <th>City
-        <span class="sort-buttons">
-         <button (click)="sortByCity('asc')">⬆️</button>
-         <button (click)="sortByCity('desc')">⬇️</button>
-        </span>
-        </th>
-      <th>ULB Code
-        <span class="sort-buttons">
-        <button (click)="sortByULBCode('asc')">⬆️</button>
-        <button (click)="sortByULBCode('desc')">⬇️</button>
-        </span>
-      </th>
-      <th>PDF DOCUMENT</th>
-      
-
-      <th>Form Status</th>
-      <th>Digitize Status</th>
-      <th>Form Uploaded On
-        <button class="calendar-btn" (click)="toggleUploadedDatePopup($event)">📅</button>
-
-        <!-- Uploaded On Date Range Popup -->
-<!-- Uploaded On Date Range Popup -->
-<div *ngIf="showUploadedDatePopup" class="uploaded-popup-overlay">
-  <div class="uploaded-popup-content">
-    <h3>Select Uploaded Date Range</h3>
-
-    <label>Start Date:</label>
-    <input type="date" [(ngModel)]="uploadedStartDate" />
-
-    <label>End Date:</label>
-    <input type="date" [(ngModel)]="uploadedEndDate" />
-
-    <div class="uploaded-popup-buttons">
-      <button class="uploaded-apply-btn" (click)="applyUploadedDateRange()">Apply</button>
-      <button class="uploaded-cancel-btn" (click)="showUploadedDatePopup = false">Cancel</button>
-      <button class="uploaded-reset-btn" (click)="resetuploadedonDateRange()">Reset</button>
-    </div>
-  </div>
-</div>
-
-
-      </th>
-      <th>
-  Form Digitized On
-  
-
-<div class="date-filter">
- 
-  <button class="calendar-btn" (click)="openDatePopup()">
-    📅 
-  </button>
-
-  <!-- Date Range Popup -->
-<!-- Date Range Popup -->
-<div class="popup-overlay" *ngIf="showDatePopup">
-  <div class="popup-box">
-    <h3>Select Date Range</h3>
-
-    <!-- Inline Date Fields -->
-    <div class="date-fields">
-      <!-- Start Date -->
-      <mat-form-field appearance="outline">
-        <mat-label>Start Date</mat-label>
-        <input matInput
-               [matDatepicker]="startPicker"
-               [(ngModel)]="digitizedStartDate"
-               [matDatepickerFilter]="disableFutureDates"
-               [max]="today"
-               placeholder="Choose start date" />
-        <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
-        <mat-datepicker #startPicker></mat-datepicker>
-      </mat-form-field>
-
-      <!-- End Date -->
-      <mat-form-field appearance="outline">
-        <mat-label>End Date</mat-label>
-        <input matInput
-               [matDatepicker]="endPicker"
-               [(ngModel)]="digitizedEndDate"
-               [matDatepickerFilter]="disableFutureDates"
-               [min]="digitizedStartDate"
-               [max]="today"
-               placeholder="Choose end date" />
-        <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
-        <mat-datepicker #endPicker></mat-datepicker>
-      </mat-form-field>
-    </div>
-
-    <!-- Validation error -->
-    <div *ngIf="digitizedStartDate && digitizedEndDate && !isDateRangeValid()" class="error">
-       Start date cannot be after End date
-    </div>
-
-    <!-- Actions -->
-    <div class="popup-actions">
-      <button class="ok-btn"
-              [disabled]="!digitizedStartDate || !digitizedEndDate || !isDateRangeValid()"
-              (click)="applyDateRange()">OK</button>
-      <button class="reset-btn" (click)="resetDateRange()">Reset</button>
-      <button class="close-btn" (click)="closeDatePopup()">Close</button>
-    </div>
-  </div>
-</div>
-
-
-
-  <!-- Show chosen range -->
-  <div *ngIf="digitizedStartDate && digitizedEndDate" class="date-display">
-    {{ digitizedStartDate | date:'dd-MM-yyyy' }} to {{ digitizedEndDate | date:'dd-MM-yyyy' }}
-  </div>
-</div>
-
-
-</th>
-
-      <th  tabindex="-1">Request ID / Log</th>
-    </tr>
-  </thead>
-   <tbody>
-      <!--  If no results, show single row -->
-      <tr *ngIf="filteredFiles.length === 0">
-        <td colspan="10" class="no-results">No results found within selected filters</td>
-      </tr>
-    <tr *ngFor="let file of filteredFiles" [ngClass]="{'active-row':  activeRow === file}">
-       <td>
-        <input type="checkbox" [(ngModel)]="file.selected" (change)="updateSelection()" />
-      </td>
-     
-      <td>{{ file.stateName }}</td>
-      <td>{{ file.cityName }}</td>
-      <td>{{ file.ulbCode }}</td>
-
-<td>
-  <div class="content-wrapper1">
-  <!-- Main Ledger file -->
-   <div class="ulb-file">
-  <ng-container *ngIf="file.previewUrl; else useBackendFile">
-    <a [href]="file.previewUrl" target="_blank" (click)="setActiveRow(file); $event.stopPropagation()" >{{ file.fileName }}</a>
-    <div class="page-count" *ngIf="file.pageCount !== undefined">
-      ({{ file.pageCount }} pages)
-    </div>
-  </ng-container>
-  
-
-  <ng-template #useBackendFile>
-    <ng-container *ngIf="file.fileUrl; else noFileAvailable">
-      <a [href]="storageBaseUrl + file.fileUrl" target="_blank" (click)="setActiveRow(file); $event.stopPropagation()">{{ file.fileName }}</a>
-      <div class="page-count" *ngIf="file.pageCount !== undefined">
-        ({{ file.pageCount }} pages)
-      </div>
-    </ng-container>
-
-    <ng-template #noFileAvailable>
-      {{ file.fileName }}
-      <div class="page-count" *ngIf="file.pageCount !== undefined">
-        ({{ file.pageCount }} pages)
-      </div>
-    </ng-template>
-  </ng-template>
-  </div>
-  <!-- Separator -->
-  <!-- <hr class="separator" style="margin-top: 44px;" /> -->
-
-  <!-- AFS Extra Files -->
-  <div class="afs-files"  *ngIf="file.extraFiles && file.extraFiles.length > 0">
-    <div *ngFor="let ef of file.extraFiles" class="file-link afs-file">
-      <a [href]="ef.fileUrl" target="_blank" (click)="setActiveRow(file); $event.stopPropagation()">{{ ef.fileName }}</a>
-      <div class="page-count" *ngIf="ef.pageCount !== undefined">
-        ({{ ef.pageCount }} pages)
-      </div>
-    </div>
-  </div>
-
-  <!-- Upload Button -->
-  <div style="margin-top: -14px;">
-    <button class="upload-btn" style="margin-bottom: 4px;" (click)="setActiveRow(file); triggerFileInput(file)">
-      {{ file.extraFiles && file.extraFiles.length > 0 ? 'Re-upload' : 'Upload' }}
-    </button>
-    <input type="file"
-           accept="application/pdf"
-           style="display: none"
-           (change)="handleFileUpload($event, file)"
-           #fileInput
-           [attr.data-id]="file.cityName + file.ulbCode" />
-  </div>
-  </div>
-</td>
-
-
-
-     <td>
-       <div class="digitize-status-wrapper">
-      <div class="digitize-block ulb-block">
-      {{ file.statusText }}
-      <!-- <hr class="separator" style="margin-bottom: 42px;" /> -->
-   </div>
-   <div class="digitize-block afs-block" *ngIf="file.extraFiles && file.extraFiles.length > 0">N/A</div>
-   </div>
-     </td>
-      <!-- <td></td> -->
-<td>
-   <div class="digitize-status-wrapper">
-  <div class="digitize-block ulb-block">
-  <!-- ULB Slot -->
-  <div *ngIf="hasExcelFile(file, 'ULB'); else noUlb">
-    DIGITIZED
-    <a *ngFor="let excel of getExcelFiles(file, 'ULB')" 
-       [href]="excel.fileUrl" 
-       target="_blank">
-       excelfile.xlsx
-    </a>
-  </div>
-  <ng-template #noUlb>
-    NOT DIGITIZED
-  </ng-template>
-</div>
-  <!-- <hr class="separator" /> -->
-  <div class="spacingup-2">
-  <div class="digitize-block afs-block" *ngIf="file.extraFiles && file.extraFiles.length > 0">
-  <div *ngIf="hasExcelFile(file, 'AFS'); else noAfs">
-    DIGITIZED
-    <a *ngFor="let excel of getExcelFiles(file, 'AFS')" 
-       [href]="excel.fileUrl" 
-       target="_blank">
-       excelfile.xlsx
-    </a>
-  </div>
-  <ng-template #noAfs>
-    NOT DIGITIZED
-  </ng-template>
-</div>
-</div>
-</div>
-</td>
-
-
-<td>
-  <div class="digitize-status-wrapper" style="margin-top: 20px; margin-right: 12px;"
-       [ngClass]="{'single-block': !file.uploadedAt}">
-    <div class="digitize-block ulb-block" *ngIf="file.ulbSubmit">
-      {{ file.ulbSubmit | date:'short' }}
-    </div>
-    <div class="digitize-block ulb-block" *ngIf="!file.ulbSubmit">
-      Not Submitted
-    </div>
-
-    <div class="digitize-block afs-block" *ngIf="file.uploadedAt">
-      {{ file.uploadedAt | date:'short' }}
-    </div>
-  </div>
-</td>
-
-      
-      
-<td>
-  <div class="timestamp-wrapper" style="margin-top: 20px; margin-right: 15px;" *ngIf="file.excelFiles && file.excelFiles.length > 0; else noFiles">
-    <div class="timestamp-block" *ngFor="let excel of file.excelFiles">
-      <span>
-        {{ excel && excel.uploadedAt ? (excel.uploadedAt | date:'d/M/yyyy, h:mm a') : 'N/A' }}
-      </span>
-    </div>
-  </div>
-
-  <ng-template #noFiles>
-    <div class="digitize-status-wrapper single-block" style="margin-top: 30px;">
-      <div class="digitize-block ulb-block">N/A</div>
-    </div>
-  </ng-template>
-</td>
-
-
-
-
-  <td>
-     <div class="digitize-status-wrapper">
-        <div 
-           class="digitize-block ulb-block"> <a href="javascript:void(0)" (click)="viewLogs(file['ulbId'])"> View Logs</a>
+    <div class="content-panel">
+      <!-- Top Controls -->
+      <div class="top-controls">
+        <div class="metrics-box">
+          <div class="metrics-section">
+            <div class="metrics-item">
+              Files Digitized: <span class="number">{{ globalMetrics.digitizedFiles }}</span>
+            </div>
+            <div class="metrics-item">
+              Pages Digitized: <span class="number">{{ globalMetrics.digitizedPages }}</span>
+            </div>
+            <div class="metrics-item error">
+              Files Failed: <span class="number">{{ globalMetrics.failedFiles }}</span>
+            </div>
+            <div class="metrics-item error">
+              Pages Failed: <span class="number">{{ globalMetrics.failedFiles }}</span>
+            </div>
+            <div class="metrics-item success">
+              Successful Digitization: <span class="number">{{ getGlobalSuccessRate() }}%</span>
+            </div>
+          </div>
         </div>
-        
+
+
+
+        <button class="download-btn" (click)="downloadExcel()">Download</button>
+        <div class="top-actions">
+
+          <div class="profile-icon" (click)="togglePopup()">👤</div>
+        </div>
       </div>
-  </td>
-    </tr>
-  </tbody>
-</table>
-</div>
-<div *ngIf="selectedFilesCount > 0" class="selection-summary">
-  <strong>{{ totalSelectedPages }} pages</strong> from 
-  <strong>{{ selectedFilesCount }} PDF file(s)</strong> selected to digitize
 
-</div>
+      <!-- Profile Popup -->
+      <div class="profile-popup" *ngIf="showPopup">
+        <div class="close-btn" (click)="togglePopup()">×</div>
+        <div class="popup-content">
+          <div class="avatar-large">👤</div>
+          <div><strong>Name:</strong> {{ fullName }}</div>
+          <div><strong>Email:</strong> {{ email }}</div>
+          <div><strong>Role:</strong> {{ role }}</div>
+          <div><strong>Last Login:</strong> {{ lastLoginTime | date:'short' }}</div>
+          <button class="logout-btn" (click)="logout()">Logout</button>
+        </div>
+      </div>
 
-<div>
-     
-  <button class="digitize-btn" (click)="openDigitizePopup()">Digitize & Download</button>
-</div>
-<!-- Digitize Popup -->
-<div class="popup-overlay" *ngIf="showDigitizePopup">
-  <div class="popup-box">
-    <h3>Confirm Digitization</h3>
-    <p>
-      You have selected <strong>{{ selectedFilesCount }}</strong> file(s) 
-      containing <strong>{{ totalSelectedPages }}</strong> pages.
-    </p>
+      <!-- Main Layout -->
+      <div class="table-wrapper">
 
-    <div *ngIf="digitizeStatus === ''">
-      <button class="proceed-btn" (click)="proceedDigitization()">Proceed</button>
-      <button class="cancel-btn" (click)="closeDigitizePopup()">Cancel</button>
-    </div>
 
-    <div *ngIf="digitizeStatus === 'done'">
-      <p style="color: green; font-weight: bold;"> Done</p>
-      <button (click)="closeDigitizePopup()">Close</button>
-    </div>
-  </div>
-</div>
-</div>
-<!-- <div *ngIf="filtersApplied && filteredFiles.length === 0" class="no-files-msg">
+
+        <!-- Main Content -->
+        <div class="main-content">
+          <div class="placeholder-section" *ngIf="!filtersApplied">
+            <div>
+              <h4>select filters on the left pane to see the files</h4>
+            </div>
+          </div>
+          <div *ngIf="isLoading" class="loader-overlay">
+            <div class="spinner"></div>
+            <p>Loading data...</p>
+          </div>
+          <!-- Loader -->
+          <div *ngIf="isLoading" class="loader-overlay">
+            <div class="spinner"></div>
+            <p>Please wait...</p>
+          </div>
+
+          <div class="file-results" *ngIf="filtersApplied">
+            <h3>Available Files</h3>
+            <div class="table-container">
+              <table class="afs-table">
+                <thead>
+                  <tr>
+                    <th>
+                      ALL <input type="checkbox" [(ngModel)]="selectAll" (change)="toggleSelectAll()" />
+                    </th>
+                    <th>State</th>
+                    <th>City
+                      <span class="sort-buttons">
+                        <button (click)="sortByCity('asc')">⬆️</button>
+                        <button (click)="sortByCity('desc')">⬇️</button>
+                      </span>
+                    </th>
+                    <th>ULB Code
+                      <span class="sort-buttons">
+                        <button (click)="sortByULBCode('asc')">⬆️</button>
+                        <button (click)="sortByULBCode('desc')">⬇️</button>
+                      </span>
+                    </th>
+                    <th>PDF DOCUMENT</th>
+
+
+                    <th>Form Status</th>
+                    <th>Digitize Status</th>
+                    <th>Form Uploaded On
+                      <button class="calendar-btn" (click)="toggleUploadedDatePopup($event)">📅</button>
+
+                      <!-- Uploaded On Date Range Popup -->
+                      <!-- Uploaded On Date Range Popup -->
+                      <div *ngIf="showUploadedDatePopup" class="uploaded-popup-overlay">
+                        <div class="uploaded-popup-content">
+                          <h3>Select Uploaded Date Range</h3>
+
+                          <label>Start Date:</label>
+                          <input type="date" [(ngModel)]="uploadedStartDate" />
+
+                          <label>End Date:</label>
+                          <input type="date" [(ngModel)]="uploadedEndDate" />
+
+                          <div class="uploaded-popup-buttons">
+                            <button class="uploaded-apply-btn" (click)="applyUploadedDateRange()">Apply</button>
+                            <button class="uploaded-cancel-btn" (click)="showUploadedDatePopup = false">Cancel</button>
+                            <button class="uploaded-reset-btn" (click)="resetuploadedonDateRange()">Reset</button>
+                          </div>
+                        </div>
+                      </div>
+
+
+                    </th>
+                    <th>
+                      Form Digitized On
+
+
+                      <div class="date-filter">
+
+                        <button class="calendar-btn" (click)="openDatePopup()">
+                          📅
+                        </button>
+
+                        <!-- Date Range Popup -->
+                        <!-- Date Range Popup -->
+                        <div class="popup-overlay" *ngIf="showDatePopup">
+                          <div class="popup-box">
+                            <h3>Select Date Range</h3>
+
+                            <!-- Inline Date Fields -->
+                            <div class="date-fields">
+                              <!-- Start Date -->
+                              <mat-form-field appearance="outline">
+                                <mat-label>Start Date</mat-label>
+                                <input matInput [matDatepicker]="startPicker" [(ngModel)]="digitizedStartDate"
+                                  [matDatepickerFilter]="disableFutureDates" [max]="today"
+                                  placeholder="Choose start date" />
+                                <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+                                <mat-datepicker #startPicker></mat-datepicker>
+                              </mat-form-field>
+
+                              <!-- End Date -->
+                              <mat-form-field appearance="outline">
+                                <mat-label>End Date</mat-label>
+                                <input matInput [matDatepicker]="endPicker" [(ngModel)]="digitizedEndDate"
+                                  [matDatepickerFilter]="disableFutureDates" [min]="digitizedStartDate" [max]="today"
+                                  placeholder="Choose end date" />
+                                <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+                                <mat-datepicker #endPicker></mat-datepicker>
+                              </mat-form-field>
+                            </div>
+
+                            <!-- Validation error -->
+                            <div *ngIf="digitizedStartDate && digitizedEndDate && !isDateRangeValid()" class="error">
+                              Start date cannot be after End date
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="popup-actions">
+                              <button class="ok-btn"
+                                [disabled]="!digitizedStartDate || !digitizedEndDate || !isDateRangeValid()"
+                                (click)="applyDateRange()">OK</button>
+                              <button class="reset-btn" (click)="resetDateRange()">Reset</button>
+                              <button class="close-btn" (click)="closeDatePopup()">Close</button>
+                            </div>
+                          </div>
+                        </div>
+
+
+
+                        <!-- Show chosen range -->
+                        <div *ngIf="digitizedStartDate && digitizedEndDate" class="date-display">
+                          {{ digitizedStartDate | date:'dd-MM-yyyy' }} to {{ digitizedEndDate | date:'dd-MM-yyyy' }}
+                        </div>
+                      </div>
+
+
+                    </th>
+
+                    <th tabindex="-1">Request ID / Log</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!--  If no results, show single row -->
+                  <tr *ngIf="filteredFiles.length === 0">
+                    <td colspan="10" class="no-results">No results found within selected filters</td>
+                  </tr>
+                  <tr *ngFor="let file of filteredFiles" [ngClass]="{'active-row':  activeRow === file}">
+                    <td>
+                      <input type="checkbox" [(ngModel)]="file.selected" (change)="updateSelection()" />
+                    </td>
+
+                    <td>{{ file.stateName }}</td>
+                    <td>{{ file.cityName }}</td>
+                    <td>{{ file.ulbCode }}</td>
+
+                    <td>
+                      <div class="content-wrapper1">
+                        <!-- Main Ledger file -->
+                        <div class="ulb-file">
+                          <ng-container *ngIf="file.previewUrl; else useBackendFile">
+                            <a [href]="file.previewUrl" target="_blank"
+                              (click)="setActiveRow(file); $event.stopPropagation()">{{ file.fileName }}</a>
+                            <div class="page-count" *ngIf="file.pageCount !== undefined">
+                              ({{ file.pageCount }} pages)
+                            </div>
+                          </ng-container>
+
+
+                          <ng-template #useBackendFile>
+                            <ng-container *ngIf="file.fileUrl; else noFileAvailable">
+                              <a [href]="storageBaseUrl + file.fileUrl" target="_blank"
+                                (click)="setActiveRow(file); $event.stopPropagation()">{{ file.fileName }}</a>
+                              <div class="page-count" *ngIf="file.pageCount !== undefined">
+                                ({{ file.pageCount }} pages)
+                              </div>
+                            </ng-container>
+
+                            <ng-template #noFileAvailable>
+                              {{ file.fileName }}
+                              <div class="page-count" *ngIf="file.pageCount !== undefined">
+                                ({{ file.pageCount }} pages)
+                              </div>
+                            </ng-template>
+                          </ng-template>
+                        </div>
+                        <!-- Separator -->
+                        <!-- <hr class="separator" style="margin-top: 44px;" /> -->
+
+                        <!-- AFS Extra Files -->
+                        <div class="afs-files" *ngIf="file.extraFiles && file.extraFiles.length > 0">
+                          <div *ngFor="let ef of file.extraFiles" class="file-link afs-file">
+                            <a [href]="ef.fileUrl" target="_blank"
+                              (click)="setActiveRow(file); $event.stopPropagation()">{{ ef.fileName }}</a>
+                            <div class="page-count" *ngIf="ef.pageCount !== undefined">
+                              ({{ ef.pageCount }} pages)
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Upload Button -->
+                        <div style="margin-top: -14px;">
+                          <button class="upload-btn" style="margin-bottom: 4px;"
+                            (click)="setActiveRow(file); triggerFileInput(file)">
+                            {{ file.extraFiles && file.extraFiles.length > 0 ? 'Re-upload' : 'Upload' }}
+                          </button>
+                          <input type="file" accept="application/pdf" style="display: none"
+                            (change)="handleFileUpload($event, file)" #fileInput
+                            [attr.data-id]="file.cityName + file.ulbCode" />
+                        </div>
+                      </div>
+                    </td>
+
+
+
+                    <td>
+                      <div class="digitize-status-wrapper">
+                        <div class="digitize-block ulb-block">
+                          {{ file.statusText }}
+                          <!-- <hr class="separator" style="margin-bottom: 42px;" /> -->
+                        </div>
+                        <div class="digitize-block afs-block" *ngIf="file.extraFiles && file.extraFiles.length > 0">N/A
+                        </div>
+                      </div>
+                    </td>
+                    <!-- <td></td> -->
+                    <td>
+                      <div class="digitize-status-wrapper">
+                        <div class="digitize-block ulb-block ">
+                          <!-- ULB Slot -->
+                          <div *ngIf="hasExcelFile(file, 'ULB'); else noUlb">
+                            DIGITIZED
+                            <a *ngFor="let excel of getExcelFiles(file, 'ULB')" [href]="excel.fileUrl" target="_blank">
+                              excelfile.xlsx
+                            </a>
+                          </div>
+                          <ng-template #noUlb>
+                            NOT DIGITIZED
+                          </ng-template>
+                        </div>
+                        <!-- <hr class="separator" /> -->
+                        <div class="spacingup-2">
+                          <div class="digitize-block afs-block" *ngIf="file.extraFiles && file.extraFiles.length > 0">
+                            <div *ngIf="hasExcelFile(file, 'AFS'); else noAfs">
+                              DIGITIZED
+                              <a *ngFor="let excel of getExcelFiles(file, 'AFS')" [href]="excel.fileUrl"
+                                target="_blank">
+                                excelfile.xlsx
+                              </a>
+                            </div>
+                            <ng-template #noAfs>
+                              NOT DIGITIZED
+                            </ng-template>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+
+                    <td>
+                      <div class="digitize-status-wrapper" style="margin-top: 20px; margin-right: 12px;"
+                        [ngClass]="{'single-block': !file.uploadedAt}">
+                        <div class="digitize-block ulb-block" *ngIf="file.ulbSubmit">
+                          {{ file.ulbSubmit | date:'short' }}
+                        </div>
+                        <div class="digitize-block ulb-block" *ngIf="!file.ulbSubmit">
+                          Not Submitted
+                        </div>
+
+                        <div class="digitize-block afs-block" *ngIf="file.uploadedAt">
+                          {{ file.uploadedAt | date:'short' }}
+                        </div>
+                      </div>
+                    </td>
+
+
+
+                    <td>
+                      <div class="timestamp-wrapper" style="margin-top: 20px; margin-right: 15px;"
+                        *ngIf="file.excelFiles && file.excelFiles.length > 0; else noFiles">
+                        <div class="timestamp-block" *ngFor="let excel of file.excelFiles">
+                          <span>
+                            {{ excel && excel.uploadedAt ? (excel.uploadedAt | date:'d/M/yyyy, h:mm a') : 'N/A' }}
+                          </span>
+                        </div>
+                      </div>
+
+                      <ng-template #noFiles>
+                        <div class="digitize-status-wrapper single-block" style="margin-top: 30px;">
+                          <div class="digitize-block ulb-block">N/A</div>
+                        </div>
+                      </ng-template>
+                    </td>
+
+
+
+
+                    <td>
+                      <div class="digitize-status-wrapper">
+                        <div class="digitize-block ulb-block"> <a href="javascript:void(0)"
+                            (click)="viewLogs(file['ulbId'])"> View Logs</a>
+                        </div>
+
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div *ngIf="selectedFilesCount > 0" class="selection-summary">
+              <strong>{{ totalSelectedPages }} pages</strong> from
+              <strong>{{ selectedFilesCount }} PDF file(s)</strong> selected to digitize
+
+            </div>
+
+            <div>
+
+              <button class="digitize-btn" (click)="openDigitizePopup()">Digitize & Download</button>
+            </div>
+            <!-- Digitize Popup -->
+            <div class="popup-overlay" *ngIf="showDigitizePopup">
+              <div class="popup-box">
+                <h3>Confirm Digitization</h3>
+                <p>
+                  You have selected <strong>{{ selectedFilesCount }}</strong> file(s)
+                  containing <strong>{{ totalSelectedPages }}</strong> pages.
+                </p>
+
+                <div *ngIf="digitizeStatus === ''">
+                  <button class="proceed-btn" (click)="proceedDigitization()">Proceed</button>
+                  <button class="cancel-btn" (click)="closeDigitizePopup()">Cancel</button>
+                </div>
+                <!-- Processing loader -->
+                <div *ngIf="digitizeStatus === 'processing'" class="loader-container">
+                  <div class="spinner"></div>
+                  <p style="margin-top: 10px; font-weight: bold;">Digitization in progress...</p>
+                </div>
+                <div *ngIf="digitizeStatus === 'done'">
+                  <p style="color: green; font-weight: bold;"> Done</p>
+                  <button (click)="closeDigitizePopup()">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- <div *ngIf="filtersApplied && filteredFiles.length === 0" class="no-files-msg">
   No files found for the selected filters.
 </div> -->
-</div>
-</div>
-</div>
-</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
 
 </div>

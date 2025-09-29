@@ -266,7 +266,7 @@ export class Dashboard implements OnInit {
     selected?: boolean;
     docType?: string;
     extraFiles?: { fileName: string; fileUrl: string; pageCount?: number; previewUrl?: string; originalFile?: File }[];
-    excelFiles?: { _id: string; s3Key: string; fileUrl: string; uploadedAt: string; uploadedBy: string; }[];
+    excelFiles?: { _id: string; s3Key: string; fileUrl: string;  requestId: string; uploadedAt: string; uploadedBy: string; }[];
 
   }[] = [];
 
@@ -595,7 +595,15 @@ export class Dashboard implements OnInit {
             statusText,
             ulbSubmit,
             extraFiles: [] as any[],
-            excelFiles: excel?.fileGroup?.files || []
+            excelFiles: (excel?.fileGroup?.files || []).map((f: any) => ({
+              _id: f._id,
+              s3Key: f.s3Key,
+              fileUrl: f.fileUrl,
+              requestId: f.requestId,   // 👈 add requestId
+              uploadedAt: f.uploadedAt,
+              uploadedBy: f.uploadedBy
+            }))
+
           }));
 
           if (afs?.success && afs.file?.fileUrl) {
@@ -1020,8 +1028,11 @@ export class Dashboard implements OnInit {
               url: digitizeResp.S3_Excel_Storage_Link,
               requestId: digitizeResp.request_id
             });
+
           }
         }
+
+
 
         // Now upload collected excel links to your backend
         if (excelLinks.length > 0) {
@@ -1178,35 +1189,54 @@ export class Dashboard implements OnInit {
 
 
 
+showLogsPopup = false;
+selectedRequestId: string | null = null;
+logsData: any = null;
 
-  // For storing logs
-  logs: string[] = [];
-  showLogsBox = false;
-  selectedUlbId: string | null = null;
+openLogs(requestId: string) {
 
-  // Fetch logs API
-  viewLogs(ulbId: string) {
-    this.selectedUlbId = ulbId;
 
-    this.http.get<{ success: boolean; data: string[] }>(`{{url}}afs-digitization/view-logs/${ulbId}`)
-      .subscribe({
-        next: (res) => {
-          this.logs = res?.success ? res.data : [];
-          this.showLogsBox = true;
-        },
-        error: () => {
-          this.logs = [];
-          this.showLogsBox = true;
-        }
-      });
+   if (this.showLogsPopup && this.selectedRequestId === requestId) {
+    this.closeLogs();
+    return;
+  }
+  this.showLogsPopup = true;
+  this.selectedRequestId = requestId;
+  this.logsData = null; // reset while loading
+
+   if (!requestId) {
+    // No requestId → show empty logs card
+    this.logsData = { Message: "No logs available for this file" };
+    return;
   }
 
-  // Close logs popup
-  closeLogs() {
-    this.showLogsBox = false;
-    this.logs = [];
-    this.selectedUlbId = null;
+const url = `http://localhost:8080/api/v1/afs-digitization/fetchRequestLogs?requestId=${requestId}`;
+this.http.get<any>(url).subscribe({
+  next: (res) => {
+    if (res.success && res.logs.length > 0) {
+      this.logsData = res.logs[0];
+    } else {
+      this.logsData = { Message: "No logs found" };
+    }
+  },
+  error: (err) => {
+    console.error("Failed to fetch logs:", err);
+    this.logsData = { Message: "Error fetching logs" };
   }
+});
+
+}
+
+closeLogs() {
+  this.showLogsPopup = false;
+  this.selectedRequestId = null;
+  this.logsData = null;
+}
+
+
+
+
+
 
 
 }

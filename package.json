@@ -36,6 +36,7 @@
     "@angular/ssr": "^20.1.0",
     "bootstrap": "^5.3.8",
     "express": "^5.1.0",
+    "file-saver": "^2.0.5",
     "moment": "^2.30.1",
     "ngx-daterangepicker-material": "^6.0.4",
     "pdf-lib": "^1.17.1",
@@ -43,6 +44,7 @@
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "vite": "^7.0.6",
+    "xlsx": "^0.18.5",
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
@@ -50,6 +52,7 @@
     "@angular/cli": "^20.1.0",
     "@angular/compiler-cli": "^20.1.0",
     "@types/express": "^5.0.1",
+    "@types/file-saver": "^2.0.7",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^20.17.19",
     "jasmine-core": "~5.8.0",

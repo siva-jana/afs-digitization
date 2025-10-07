@@ -198,31 +198,63 @@
 
                     <th>Form Status</th>
                     <th>Digitize Status</th>
-                    <th>Form Uploaded On
-                      <button class="calendar-btn" (click)="toggleUploadedDatePopup($event)">📅</button>
+                    <th>
+                      Form Uploaded On
+                      <div class="date-filter">
+                        <button class="calendar-btn" (click)="openUploadedDatePopup()">📅</button>
 
-                      <!-- Uploaded On Date Range Popup -->
-                      <!-- Uploaded On Date Range Popup -->
-                      <div *ngIf="showUploadedDatePopup" class="uploaded-popup-overlay">
-                        <div class="uploaded-popup-content">
-                          <h3>Select Uploaded Date Range</h3>
+                        <!-- Date Range Popup -->
+                        <div class="popup-overlay" *ngIf="showUploadedDatePopup">
+                          <div class="popup-box">
+                            <h3>Select Uploaded Date Range</h3>
 
-                          <label>Start Date:</label>
-                          <input type="date" [(ngModel)]="uploadedStartDate" />
+                            <!-- Inline Date Fields -->
+                            <div class="date-fields">
+                              <!-- Start Date -->
+                              <mat-form-field appearance="outline">
+                                <mat-label>Start Date</mat-label>
+                                <input matInput [matDatepicker]="uploadStartPicker" [(ngModel)]="uploadedStartDate"
+                                  [matDatepickerFilter]="disableFutureDates" [max]="today"
+                                  placeholder="Choose start date" />
+                                <mat-datepicker-toggle matSuffix [for]="uploadStartPicker"></mat-datepicker-toggle>
+                                <mat-datepicker #uploadStartPicker></mat-datepicker>
+                              </mat-form-field>
 
-                          <label>End Date:</label>
-                          <input type="date" [(ngModel)]="uploadedEndDate" />
+                              <!-- End Date -->
+                              <mat-form-field appearance="outline">
+                                <mat-label>End Date</mat-label>
+                                <input matInput [matDatepicker]="uploadEndPicker" [(ngModel)]="uploadedEndDate"
+                                  [matDatepickerFilter]="disableFutureDates" [min]="uploadedStartDate" [max]="today"
+                                  placeholder="Choose end date" />
+                                <mat-datepicker-toggle matSuffix [for]="uploadEndPicker"></mat-datepicker-toggle>
+                                <mat-datepicker #uploadEndPicker></mat-datepicker>
+                              </mat-form-field>
+                            </div>
 
-                          <div class="uploaded-popup-buttons">
-                            <button class="uploaded-apply-btn" (click)="applyUploadedDateRange()">Apply</button>
-                            <button class="uploaded-cancel-btn" (click)="showUploadedDatePopup = false">Cancel</button>
-                            <button class="uploaded-reset-btn" (click)="resetuploadedonDateRange()">Reset</button>
+                            <!-- Validation error -->
+                            <div *ngIf="uploadedStartDate && uploadedEndDate && !isUploadedDateRangeValid()"
+                              class="error">
+                              Start date cannot be after End date
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="popup-actions">
+                              <button class="ok-btn"
+                                [disabled]="!uploadedStartDate || !uploadedEndDate || !isUploadedDateRangeValid()"
+                                (click)="applyUploadedDateRange()">OK</button>
+                              <button class="reset-btn" (click)="resetUploadedDateRange()">Reset</button>
+                              <button class="close-btn" (click)="closeUploadedDatePopup()">Close</button>
+                            </div>
                           </div>
                         </div>
+
+                        <!-- Show chosen range -->
+                        <div *ngIf="uploadedStartDate && uploadedEndDate" class="date-display">
+                          {{ uploadedStartDate | date:'dd-MM-yyyy' }} to {{ uploadedEndDate | date:'dd-MM-yyyy' }}
+                        </div>
                       </div>
-
-
                     </th>
+
                     <th>
                       Form Digitized On
 
@@ -377,7 +409,7 @@
                     </td>
                     <!-- <td></td> -->
                     <td>
-                      <div class="digitize-status-wrapper">
+                      <div class="digitize-status-wrapper" style="margin-top: 60px;">
                         <div class="digitize-block ulb-block ">
                           <!-- ULB Slot -->
                           <div *ngIf="hasExcelFile(file, 'ULB'); else noUlb">
@@ -446,265 +478,34 @@
 
 
 
-                    <!-- 
-                    <td *ngFor="let excel of file.excelFiles">
-                    
-                       {{ excel.requestId }} 
-                      <button mat-button color="primary" (click)="openLogs(excel.requestId)">
+                    <!--                 
+                    <td>
+                      <button style="margin-bottom: 30px;" mat-button color="primary"
+                        (click)="openLogs(file.excelFiles?.[0]?.requestId || '')">
                         View Logs
                       </button>
                     </td> -->
                     <td>
-                      <button mat-button color="primary" (click)="openLogs(file.excelFiles?.[0]?.requestId || '')">
-                        View Logs
-                      </button>
+                      <div *ngIf="(file.excelFiles?.length ?? 0) > 0">
+                        <ng-container *ngFor="let excel of file.excelFiles; let i = index">
+                          <button mat-button color="primary" style="margin-bottom: 5px; display: block;"
+                            (click)="openLogs(excel.requestId)">
+                            View Logs ({{ excel.uploadedBy || 'Unknown' }})
+                          </button>
+                        </ng-container>
+                      </div>
+
+                      <div *ngIf="!file.excelFiles || file.excelFiles.length === 0">
+                        <span class="text-muted">No logs</span>
+                      </div>
                     </td>
+
 
 
                   </tr>
                 </tbody>
               </table>
-              <div *ngIf="logsData" id="logCard" class="card shadow-lg mt-3 border-0 rounded-3">
-                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                  <span>📄 Request Logs</span>
-                  <span class="badge" [ngClass]="logsData.FinalStatusCode === 200 ? 'bg-success' : 'bg-danger'">
-                    {{ logsData.FinalStatusCode }}
-                  </span>
-                </div>
 
-                <div class="card-body">
-
-                  <!-- Basic Info -->
-                  <h6 class="fw-bold mb-2">Basic Info</h6>
-                  <ul class="list-group mb-3">
-                    <li class="list-group-item"><b>Request ID:</b> {{ logsData.RequestId }}</li>
-                    <li class="list-group-item"><b>Timestamp:</b> {{ logsData.Timestamp | date:'dd MMMM yyyy,
-                      hh:mm:ssa'}}</li>
-
-                    <li class="list-group-item"><b>Message:</b> {{ logsData.Message }}</li>
-                    <li class="list-group-item"><b>File Name:</b> {{ logsData.PDFUpload_FileName }}</li>
-
-                    <li class="list-group-item">
-                      <b>File Size:</b> {{ (logsData.PDFUpload_FileSize_In_Bytes / (1024*1024)) | number:'1.2-2' }} MB
-                    </li>
-
-                    <li class="list-group-item"><b>Final Status Code:</b> {{ logsData.FinalStatusCode }}</li>
-                  </ul>
-
-                  <!-- Processing Stages -->
-                  <h6 class="fw-bold mb-2">Processing Stages</h6>
-                  <div class="accordion" id="logAccordion">
-
-                    <!-- PDF Upload -->
-                    <div class="accordion-item">
-                      <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                          data-bs-target="#pdfUpload">
-                          📤 PDF Upload
-                        </button>
-                      </h2>
-                      <div id="pdfUpload" class="accordion-collapse collapse" data-bs-parent="#logAccordion">
-                        <div class="accordion-body">
-                          <b>Status:</b> {{ logsData.PDFUpload_Status }} <br>
-                          <b>Code:</b> {{ logsData.PDFUpload_StatusCode }} <br>
-                          <b>File Size:</b> {{ logsData.PDFUpload_FileSize_In_Bytes/ (1024*1024) | number:'1.2-2' }} MB
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- PDF Quality Check -->
-                    <div class="accordion-item">
-                      <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                          data-bs-target="#pdfQuality">
-                          🧐 PDF Quality Check
-                        </button>
-                      </h2>
-                      <div id="pdfQuality" class="accordion-collapse collapse" data-bs-parent="#logAccordion">
-                        <div class="accordion-body">
-                          <b>Status:</b> {{ logsData.PDFQualityCheck_Status }} <br>
-                          <b>Code:</b> {{ logsData.PDFQualityCheck_StatusCode }} <br>
-                          <b>Processing Time:</b> {{ (logsData.PDFQualityCheck_ProcessingTimeMs / 1000) | number:'1.2-2'
-                          }} seconds <br>
-                          <b>Blur Score:</b> {{ logsData.PDFQualityCheck_BlurScore | number:'1.0-2' }}
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- PDF Enhancement -->
-                    <div class="accordion-item">
-                      <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                          data-bs-target="#pdfEnhance">
-                          ✨ PDF Enhancement
-                        </button>
-                      </h2>
-                      <div id="pdfEnhance" class="accordion-collapse collapse" data-bs-parent="#logAccordion">
-                        <div class="accordion-body">
-                          <b>Status:</b> {{ logsData.PDFEnhancement_Status }} <br>
-                          <b>Code:</b> {{ logsData.PDFEnhancement_StatusCode }} <br>
-                          <b>Processing Time:</b> {{ (logsData.PDFEnhancement_ProcessingTimeMs)/1000 |number:'1.2-2' }}
-                          seconds
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- S3 Upload -->
-                    <div class="accordion-item">
-                      <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                          data-bs-target="#s3Upload">
-                          ☁️ S3 Upload
-                        </button>
-                      </h2>
-                      <div id="s3Upload" class="accordion-collapse collapse" data-bs-parent="#logAccordion">
-                        <div class="accordion-body">
-                          <b>Status:</b> {{ logsData.S3Upload_Status }} <br>
-                          <b>Code:</b> {{ logsData.S3Upload_StatusCode }} <br>
-                          <b>Processing Time:</b> {{ (logsData.S3Upload_ProcessingTimeMs)/1000 |number:'1.2-2' }}
-                          seconds
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- OCR -->
-                    <div class="accordion-item">
-                      <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                          data-bs-target="#ocr">
-                          🔎 OCR
-                        </button>
-                      </h2>
-                      <div id="ocr" class="accordion-collapse collapse" data-bs-parent="#logAccordion">
-                        <div class="accordion-body">
-                          <b>Status:</b> {{ logsData.OCR_Status }} <br>
-                          <b>Code:</b> {{ logsData.OCR_StatusCode }} <br>
-                          <b>Processing Time:</b> {{ (logsData.OCR_ProcessingTimeMs)/1000 |number:'1.2-2' }} seconds
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- LLM Postprocessing -->
-                    <div class="accordion-item">
-                      <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                          data-bs-target="#llmPost">
-                          🛠️ LLM Postprocessing
-                        </button>
-                      </h2>
-                      <div id="llmPost" class="accordion-collapse collapse" data-bs-parent="#logAccordion">
-                        <div class="accordion-body">
-                          <b>Status:</b> {{ logsData.LLM_Postprocessing_Status }} <br>
-                          <b>Code:</b> {{ logsData.LLM_Postprocessing_StatusCode }} <br>
-                          <b>Processing Time:</b> {{ (logsData.LLM_Postprocessing_ProcessingTimeMs)/1000 |
-                          number:'1.2-2' }} seconds
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- LLM Confidence Scoring -->
-                    <div class="accordion-item">
-                      <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                          data-bs-target="#llmConfidence">
-                          📊 LLM Confidence Scoring
-                        </button>
-                      </h2>
-                      <div id="llmConfidence" class="accordion-collapse collapse" data-bs-parent="#logAccordion">
-                        <div class="accordion-body">
-                          <b>Status:</b> {{ logsData.LLM_ConfidenceScoring_Status }} <br>
-                          <b>Code:</b> {{ logsData.LLM_ConfidenceScoring_StatusCode }} <br>
-                          <b>Processing Time:</b> {{ (logsData.LLM_ConfidenceScoring_ProcessingTimeMs)/1000 |
-                          number:'1.2-2' }} seconds
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- LLM Validation -->
-                    <div class="accordion-item">
-                      <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                          data-bs-target="#llmValidation">
-                          🤖 LLM Validation
-                        </button>
-                      </h2>
-                      <div id="llmValidation" class="accordion-collapse collapse" data-bs-parent="#logAccordion">
-                        <div class="accordion-body">
-                          <b>Status:</b> {{ logsData.LLM_Validation_Status }} <br>
-                          <b>Code:</b> {{ logsData.LLM_Validation_StatusCode }} <br>
-                          <b>Processing Time:</b> {{ (logsData.LLM_Validation_ProcessingTimeMs)/1000 | number:'1.2-2'}}
-                          seconds
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Excel Generation -->
-                    <div class="accordion-item">
-                      <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                          data-bs-target="#excelGen">
-                          📑 Excel Generation
-                        </button>
-                      </h2>
-                      <div id="excelGen" class="accordion-collapse collapse" data-bs-parent="#logAccordion">
-                        <div class="accordion-body">
-                          <b>Status:</b> {{ logsData.ExcelGeneration_Status }} <br>
-                          <b>Code:</b> {{ logsData.ExcelGeneration_StatusCode }} <br>
-                          <b>Processing Time:</b> {{ (logsData.ExcelGeneration_ProcessingTimeMs)/1000 | number:'1.2-2'
-                          }} seconds
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Excel Storage -->
-                    <div class="accordion-item">
-                      <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                          data-bs-target="#excelStorage">
-                          💾 Excel Storage
-                        </button>
-                      </h2>
-                      <div id="excelStorage" class="accordion-collapse collapse" data-bs-parent="#logAccordion">
-                        <div class="accordion-body">
-                          <b>Status:</b> {{ logsData.ExcelStorage_Status }} <br>
-                          <b>Code:</b> {{ logsData.ExcelStorage_StatusCode }} <br>
-                          <b>Processing Time:</b> {{ (logsData.ExcelStorage_ProcessingTimeMs)/1000 | number:'1.2-2' }}
-                          seconds
-                        </div>
-                      </div>
-                    </div>
-
-                  </div>
-
-                  <!-- Links -->
-                  <div class="mt-3">
-                    <a *ngIf="logsData.SourcePDFUrl" [href]="logsData.SourcePDFUrl" target="_blank"
-                      class="btn btn-sm btn-primary">
-                      📄 View Source PDF
-                    </a>
-                    <a *ngIf="logsData.DigitizedExcelUrl" [href]="logsData.DigitizedExcelUrl" target="_blank"
-                      class="btn btn-sm btn-success ms-2">
-                      📊 Download Excel
-                    </a>
-                  </div>
-
-                  <!-- Extra Info -->
-                  <div class="mt-3">
-                    <p><b>Total Processing Time:</b> {{ (logsData.TotalProcessingTimeMs)/1000 | number:'1.2-2' }}
-                      seconds</p>
-                    <p><b>Processing Mode:</b> {{ logsData.ProcessingMode }}</p>
-                    <p><b>Retry Count:</b> {{ logsData.RetryCount }}</p>
-                    <p *ngIf="logsData.ErrorCode && logsData.ErrorCode !== 'N/A'"><b>Error Code:</b> {{
-                      logsData.ErrorCode }}</p>
-                    <p *ngIf="logsData.ErrorMessage && logsData.ErrorMessage !== 'N/A'"><b>Error Message:</b> {{
-                      logsData.ErrorMessage }}</p>
-                    <p *ngIf="logsData.ErrorResolution && logsData.ErrorResolution !== 'N/A'"><b>Error Resolution:</b>
-                      {{ logsData.ErrorResolution }}</p>
-                    <p *ngIf="logsData.OriginalErrorMessage && logsData.OriginalErrorMessage !== ''"><b>Original
-                        Error:</b> {{ logsData.OriginalErrorMessage }}</p>
-                  </div>
-                </div>
-              </div>
 
 
             </div>
@@ -751,5 +552,241 @@
     </div>
   </div>
 
+  <div *ngIf="logsData" class="log-overlay">
+    <div id="logCard" class="card shadow-lg border-0 rounded-3">
+
+
+      <div class="card-header text-dark d-flex justify-content-between align-items-center">
+        <span>📄 Request Logs</span>
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge" [ngClass]="logsData.FinalStatusCode === 200 ? 'bg-success' : 'bg-danger'">
+            {{ logsData.FinalStatusCode }}
+          </span>
+          <button class="close-btn btn btn-sm btn-danger" (click)="logsData = null">Close</button>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- Basic Info -->
+        <h6 class="fw-bold mb-2">Basic Info</h6>
+        <ul class="list-group mb-3">
+          <li class="list-group-item"><b>Request ID:</b> {{ logsData.RequestId }}</li>
+          <li class="list-group-item"><b>Timestamp:</b> {{ logsData.Timestamp | date:'dd MMMM yyyy,
+            hh:mm:ssa'}}</li>
+
+          <li class="list-group-item"><b>Message:</b> {{ logsData.Message }}</li>
+          <li class="list-group-item"><b>File Name:</b> {{ logsData.PDFUpload_FileName }}</li>
+
+          <li class="list-group-item">
+            <b>File Size:</b> {{ (logsData.PDFUpload_FileSize_In_Bytes / (1024*1024)) | number:'1.2-2' }} MB
+          </li>
+
+          <li class="list-group-item"><b>Final Status Code:</b> {{ logsData.FinalStatusCode }}</li>
+        </ul>
+
+        <!-- Processing Stages -->
+        <h6 class="fw-bold mb-2">Processing Stages</h6>
+        <div class="accordion" id="logAccordion">
+
+          <!-- PDF Upload -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#pdfUpload">
+                📤 PDF Upload
+              </button>
+            </h2>
+            <div id="pdfUpload" class="accordion-collapse collapse" data-bs-parent="#logAccordion">
+              <div class="accordion-body">
+                <b>Status:</b> {{ logsData.PDFUpload_Status }} <br>
+                <b>Code:</b> {{ logsData.PDFUpload_StatusCode }} <br>
+                <b>File Size:</b> {{ logsData.PDFUpload_FileSize_In_Bytes/ (1024*1024) | number:'1.2-2' }} MB
+              </div>
+            </div>
+          </div>
+
+          <!-- PDF Quality Check -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#pdfQuality">
+                🧐 PDF Quality Check
+              </button>
+            </h2>
+            <div id="pdfQuality" class="accordion-collapse collapse" data-bs-parent="#logAccordion">
+              <div class="accordion-body">
+                <b>Status:</b> {{ logsData.PDFQualityCheck_Status }} <br>
+                <b>Code:</b> {{ logsData.PDFQualityCheck_StatusCode }} <br>
+                <b>Processing Time:</b> {{ (logsData.PDFQualityCheck_ProcessingTimeMs / 1000) | number:'1.2-2'
+                }} seconds <br>
+                <b>Blur Score:</b> {{ logsData.PDFQualityCheck_BlurScore | number:'1.0-2' }}
+              </div>
+            </div>
+          </div>
+
+          <!-- PDF Enhancement -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#pdfEnhance">
+                ✨ PDF Enhancement
+              </button>
+            </h2>
+            <div id="pdfEnhance" class="accordion-collapse collapse" data-bs-parent="#logAccordion">
+              <div class="accordion-body">
+                <b>Status:</b> {{ logsData.PDFEnhancement_Status }} <br>
+                <b>Code:</b> {{ logsData.PDFEnhancement_StatusCode }} <br>
+                <b>Processing Time:</b> {{ (logsData.PDFEnhancement_ProcessingTimeMs)/1000 |number:'1.2-2' }}
+                seconds
+              </div>
+            </div>
+          </div>
+
+          <!-- S3 Upload -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#s3Upload">
+                ☁️ S3 Upload
+              </button>
+            </h2>
+            <div id="s3Upload" class="accordion-collapse collapse" data-bs-parent="#logAccordion">
+              <div class="accordion-body">
+                <b>Status:</b> {{ logsData.S3Upload_Status }} <br>
+                <b>Code:</b> {{ logsData.S3Upload_StatusCode }} <br>
+                <b>Processing Time:</b> {{ (logsData.S3Upload_ProcessingTimeMs)/1000 |number:'1.2-2' }}
+                seconds
+              </div>
+            </div>
+          </div>
+
+          <!-- OCR -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#ocr">
+                🔎 OCR
+              </button>
+            </h2>
+            <div id="ocr" class="accordion-collapse collapse" data-bs-parent="#logAccordion">
+              <div class="accordion-body">
+                <b>Status:</b> {{ logsData.OCR_Status }} <br>
+                <b>Code:</b> {{ logsData.OCR_StatusCode }} <br>
+                <b>Processing Time:</b> {{ (logsData.OCR_ProcessingTimeMs)/1000 |number:'1.2-2' }} seconds
+              </div>
+            </div>
+          </div>
+
+          <!-- LLM Postprocessing -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#llmPost">
+                🛠️ LLM Postprocessing
+              </button>
+            </h2>
+            <div id="llmPost" class="accordion-collapse collapse" data-bs-parent="#logAccordion">
+              <div class="accordion-body">
+                <b>Status:</b> {{ logsData.LLM_Postprocessing_Status }} <br>
+                <b>Code:</b> {{ logsData.LLM_Postprocessing_StatusCode }} <br>
+                <b>Processing Time:</b> {{ (logsData.LLM_Postprocessing_ProcessingTimeMs)/1000 |
+                number:'1.2-2' }} seconds
+              </div>
+            </div>
+          </div>
+
+          <!-- LLM Confidence Scoring -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#llmConfidence">
+                📊 LLM Confidence Scoring
+              </button>
+            </h2>
+            <div id="llmConfidence" class="accordion-collapse collapse" data-bs-parent="#logAccordion">
+              <div class="accordion-body">
+                <b>Status:</b> {{ logsData.LLM_ConfidenceScoring_Status }} <br>
+                <b>Code:</b> {{ logsData.LLM_ConfidenceScoring_StatusCode }} <br>
+                <b>Processing Time:</b> {{ (logsData.LLM_ConfidenceScoring_ProcessingTimeMs)/1000 |
+                number:'1.2-2' }} seconds
+              </div>
+            </div>
+          </div>
+
+          <!-- LLM Validation -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#llmValidation">
+                🤖 LLM Validation
+              </button>
+            </h2>
+            <div id="llmValidation" class="accordion-collapse collapse" data-bs-parent="#logAccordion">
+              <div class="accordion-body">
+                <b>Status:</b> {{ logsData.LLM_Validation_Status }} <br>
+                <b>Code:</b> {{ logsData.LLM_Validation_StatusCode }} <br>
+                <b>Processing Time:</b> {{ (logsData.LLM_Validation_ProcessingTimeMs)/1000 | number:'1.2-2'}}
+                seconds
+              </div>
+            </div>
+          </div>
+
+          <!-- Excel Generation -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#excelGen">
+                📑 Excel Generation
+              </button>
+            </h2>
+            <div id="excelGen" class="accordion-collapse collapse" data-bs-parent="#logAccordion">
+              <div class="accordion-body">
+                <b>Status:</b> {{ logsData.ExcelGeneration_Status }} <br>
+                <b>Code:</b> {{ logsData.ExcelGeneration_StatusCode }} <br>
+                <b>Processing Time:</b> {{ (logsData.ExcelGeneration_ProcessingTimeMs)/1000 | number:'1.2-2'
+                }} seconds
+              </div>
+            </div>
+          </div>
+
+          <!-- Excel Storage -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#excelStorage">
+                💾 Excel Storage
+              </button>
+            </h2>
+            <div id="excelStorage" class="accordion-collapse collapse" data-bs-parent="#logAccordion">
+              <div class="accordion-body">
+                <b>Status:</b> {{ logsData.ExcelStorage_Status }} <br>
+                <b>Code:</b> {{ logsData.ExcelStorage_StatusCode }} <br>
+                <b>Processing Time:</b> {{ (logsData.ExcelStorage_ProcessingTimeMs)/1000 | number:'1.2-2' }}
+                seconds
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+
+        <!-- Extra Info -->
+        <div class="mt-3">
+          <p><b>Total Processing Time:</b> {{ (logsData.TotalProcessingTimeMs)/1000 | number:'1.2-2' }}
+            seconds</p>
+          <p><b>Processing Mode:</b> {{ logsData.ProcessingMode }}</p>
+          <p><b>Retry Count:</b> {{ logsData.RetryCount }}</p>
+          <p *ngIf="logsData.ErrorCode && logsData.ErrorCode !== 'N/A'"><b>Error Code:</b> {{
+            logsData.ErrorCode }}</p>
+          <p *ngIf="logsData.ErrorMessage && logsData.ErrorMessage !== 'N/A'"><b>Error Message:</b> {{
+            logsData.ErrorMessage }}</p>
+          <p *ngIf="logsData.ErrorResolution && logsData.ErrorResolution !== 'N/A'"><b>Error Resolution:</b>
+            {{ logsData.ErrorResolution }}</p>
+          <p *ngIf="logsData.OriginalErrorMessage && logsData.OriginalErrorMessage !== ''"><b>Original
+              Error:</b> {{ logsData.OriginalErrorMessage }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
 </div>
